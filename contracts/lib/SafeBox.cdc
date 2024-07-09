@@ -1,17 +1,17 @@
-import FungibleToken from 0xf233dcee88fe0abe
-import cBridge from 0x08dd120226ec2213
-import PbPegged from 0x08dd120226ec2213
+import FungibleToken from "FungibleToken"
+import cBridge from "cBridge"
+import PbPegged from "PbPegged"
 // DelayedTransfer must from same account as addXfer is limited to access(account) to avoid spam
-import DelayedTransfer from 0x08dd120226ec2213
-import VolumeControl from 0x08dd120226ec2213
+import DelayedTransfer from "DelayedTransfer"
+import VolumeControl from "VolumeControl"
 
 // user deposit into SafeBox, cBridge will mint corresponding ERC20 tokens on specified dest chain.
 // when user burn ERC20 tokens, cBridge will withdraw FungibleTokens to user specified receiver address
-pub contract SafeBox {
+access(all) contract SafeBox {
   // path for admin resource
-    pub let AdminPath: StoragePath
+    access(all) let AdminPath: StoragePath
   // ========== events ==========
-  pub event Deposited(
+  access(all) event Deposited(
     depoId: String,
     depositor: Address,
     token: String,
@@ -21,7 +21,7 @@ pub contract SafeBox {
     nonce: UInt64
   )
 
-  pub event Withdrawn(
+  access(all) event Withdrawn(
     wdId: String,
     receiver: Address,
     token: String,
@@ -33,15 +33,15 @@ pub contract SafeBox {
 
   // ========== structs ==========
   // token vault type identifier string to its config so we can borrow for deposit/withdraw
-  pub struct TokenCfg {
-    pub let vaultPub: PublicPath
-    pub let vaultSto: StoragePath
-    pub let minDepo: UFix64
-    pub let maxDepo: UFix64
+  access(all) struct TokenCfg {
+    access(all) let vaultPub: PublicPath
+    access(all) let vaultSto: StoragePath
+    access(all) let minDepo: UFix64
+    access(all) let maxDepo: UFix64
     // if withdraw amount > delayThreshold, put into delayed transfer map
-    pub let delayThreshold: UFix64
+    access(all) let delayThreshold: UFix64
     // used for volume controller
-    pub let cap: UFix64
+    access(all) let cap: UFix64
 
     init(vaultPub:PublicPath, vaultSto: StoragePath, minDepo: UFix64, maxDepo: UFix64, delayThreshold: UFix64, cap: UFix64) {
       self.vaultPub = vaultPub
@@ -53,11 +53,11 @@ pub contract SafeBox {
     }
   }
   // info about one user deposit
-  pub struct DepoInfo {
-    pub let amt: UFix64
-    pub let mintChId: UInt64
-    pub let mintAddr: String
-    pub let nonce: UInt64
+  access(all) struct DepoInfo {
+    access(all) let amt: UFix64
+    access(all) let mintChId: UInt64
+    access(all) let mintAddr: String
+    access(all) let nonce: UInt64
 
     init(amt: UFix64, mintChId: UInt64, mintAddr: String, nonce: UInt64) {
       self.amt = amt
@@ -69,11 +69,11 @@ pub contract SafeBox {
 
   // ========== contract states and maps ==========
   // unique chainid required by cbridge system
-  pub let chainID: UInt64
+  access(all) let chainID: UInt64
   // domainPrefix to ensure no replay on co-sign msgs
   access(contract) let domainPrefix: [UInt8]
   // similar to solidity pausable
-  pub var isPaused: Bool
+  access(all) var isPaused: Bool
 
   // key is token vault identifier, eg. A.1122334455667788.ExampleToken.Vault
   access(account) var tokMap: {String: TokenCfg}
@@ -81,37 +81,37 @@ pub contract SafeBox {
   // key is calculated depoId or wdId
   access(account) var records: {String: Bool}
 
-  pub fun getTokenConfig(identifier: String): TokenCfg {
+  access(all) fun getTokenConfig(identifier: String): TokenCfg {
     let tokenCfg = self.tokMap[identifier]!
     return tokenCfg
   }
 
-  pub fun recordExist(id: String): Bool {
+  access(all) fun recordExist(id: String): Bool {
     return self.records.containsKey(id)
   }
 
   // ========== resource ==========
-  pub resource SafeBoxAdmin {
-    pub fun addTok(identifier: String, tok: TokenCfg) {
+  access(all) resource SafeBoxAdmin {
+    access(all) fun addTok(identifier: String, tok: TokenCfg) {
       assert(!SafeBox.tokMap.containsKey(identifier), message: "this token already exist")
       SafeBox.tokMap[identifier] = tok
     }
 
-    pub fun rmTok(identifier: String) {
+    access(all) fun rmTok(identifier: String) {
       assert(SafeBox.tokMap.containsKey(identifier), message: "this token do not exist")
       SafeBox.tokMap.remove(key: identifier)
     }
 
-    pub fun pause() {
+    access(all) fun pause() {
       SafeBox.isPaused = true
       DelayedTransfer.pause()
     }
-    pub fun unPause() {
+    access(all) fun unPause() {
       SafeBox.isPaused = false
       DelayedTransfer.unPause()
     }
 
-    pub fun createSafeBoxAdmin(): @SafeBoxAdmin {
+    access(all) fun createSafeBoxAdmin(): @SafeBoxAdmin {
         return <-create SafeBoxAdmin()
     }
   }
@@ -128,10 +128,10 @@ pub contract SafeBox {
     self.tokMap = {}
 
     self.AdminPath = /storage/SafeBoxAdmin
-    self.account.save<@SafeBoxAdmin>(<- create SafeBoxAdmin(), to: self.AdminPath)
+    self.account.storage.save<@SafeBoxAdmin>(<- create SafeBoxAdmin(), to: self.AdminPath)
   }
 
-  pub fun deposit(from: &AnyResource{FungibleToken.Provider}, info:DepoInfo) {
+  access(all) fun deposit(from: &{FungibleToken.Provider}, info:DepoInfo) {
     pre {
       !self.isPaused: "contract is paused"
     }
@@ -148,7 +148,7 @@ pub contract SafeBox {
     assert(!self.records.containsKey(depoId), message: "depoId already exists")
     self.records[depoId] = true
 
-    let recev = self.account.getCapability(tokenCfg.vaultPub).borrow<&AnyResource{FungibleToken.Receiver}>()
+    let recev = self.account.capabilities.get(tokenCfg.vaultPub).borrow<&{FungibleToken.Receiver}>()
                       ?? panic("Could not borrow a reference to the receiver")
     recev.deposit(from: <-from.withdraw(amount: info.amt))
     emit Deposited(
@@ -164,7 +164,7 @@ pub contract SafeBox {
 
   // we can also use recipient: &AnyResource{FungibleToken.Receiver} to do deposit.
   // but now, we use the tokCfg pubPath to get the Receiver first.
-  pub fun withdraw(token: String, wdmsg: [UInt8], sigs: [cBridge.SignerSig]) {
+  access(all) fun withdraw(token: String, wdmsg: [UInt8], sigs: [cBridge.SignerSig]) {
     pre {
       !self.isPaused: "contract is paused"
     }
@@ -183,7 +183,7 @@ pub contract SafeBox {
 
     assert(!self.records.containsKey(wdId), message: "wdId already exists")
     self.records[wdId] = true
-    let receiverCap = getAccount(wdInfo.receiver).getCapability<&{FungibleToken.Receiver}>(tokCfg.vaultPub)
+    let receiverCap = getAccount(wdInfo.receiver).capabilities.get<&{FungibleToken.Receiver}>(tokCfg.vaultPub)
     let vaultRef = self.account.borrow<&{FungibleToken.Provider}>(from: tokCfg.vaultSto) ?? panic("Could not borrow reference to the owner's Vault!")
     // vault that holds to deposit ft
     let vault <- vaultRef.withdraw(amount: wdInfo.amount)
@@ -208,7 +208,7 @@ pub contract SafeBox {
     )
   }
 
-  pub fun executeDelayedTransfer(wdId: String) {
+  access(all) fun executeDelayedTransfer(wdId: String) {
     pre {
       !self.isPaused: "contract is paused"
     }

@@ -1,4 +1,90 @@
 {
+	"contracts": {
+		"FungibleToken": 	{
+			"source": "contracts/utility/flow-ft/FungibleToken.cdc",
+			"aliases": {
+				"emulator": "ee82856bf20e2aa6"
+			}
+		},
+		"NonFungibleToken": {
+			"source": "contracts/utility/flow-ft/utility/NonFungibleToken.cdc",
+			"aliases": {
+				"emulator": "ee82856bf20e2aa6"
+			}
+		},
+		"MetadataViews": {
+			"source": "contracts/utility/flow-ft/utility/MetadataViews.cdc",
+			"aliases": {
+				"emulator": "ee82856bf20e2aa6"
+			}
+		},
+		"FungibleTokenMetadataViews": {
+			"source": "contracts/utility/flow-ft/FungibleTokenMetadataViews.cdc",
+			"aliases": {
+				"emulator": "ee82856bf20e2aa6"
+			}
+		},
+		"ViewResolver": {
+			"source": "contracts/utility/flow-ft/utility/ViewResolver.cdc",
+			"aliases": {
+				"emulator": "ee82856bf20e2aa6"
+			}
+		},
+		"Burner": {
+			"source": "contracts/utility/flow-ft/utility/Burner.cdc",
+			"aliases": {
+				"emulator": "ee82856bf20e2aa6"
+			}
+		},
+		"cBridge": {
+			"source": "contracts/lib/cBridge.cdc",
+			"aliases": {
+				"emulator": "ee82856bf20e2aa6"
+			}
+		},
+		"DelayedTransfer": {
+			"source": "contracts/lib/DelayedTransfer.cdc",
+			"aliases": {
+				"emulator": "ee82856bf20e2aa6"
+			}
+		},		
+		"FTMinterBurner": {
+			"source": "contracts/lib/FTMinterBurner.cdc",
+			"aliases": {
+				"emulator": "ee82856bf20e2aa6"
+			}
+		},		
+		"Pb": {
+			"source": "contracts/lib/Pb.cdc",
+			"aliases": {
+				"emulator": "ee82856bf20e2aa6"
+			}
+		},
+		"PbPegged": {
+			"source": "contracts/lib/PbPegged.cdc",
+			"aliases": {
+				"emulator": "ee82856bf20e2aa6"
+			}
+		},
+		"PegBridge": {
+			"source": "contracts/lib/PegBridge.cdc",
+			"aliases": {
+				"emulator": "ee82856bf20e2aa6"
+			}
+		},
+		"SafeBox": {
+			"source": "contracts/lib/SafeBox.cdc",
+			"aliases": {
+				"emulator": "ee82856bf20e2aa6"
+			}
+		},
+		"VolumeControl": {
+			"source": "contracts/lib/VolumeControl.cdc",
+			"aliases": {
+				"emulator": "ee82856bf20e2aa6"
+			}
+		}
+	},
 	"networks": {
 		"emulator": "127.0.0.1:3569",
 		"mainnet": "access.mainnet.nodes.onflow.org:9000",
