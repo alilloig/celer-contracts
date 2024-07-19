@@ -197,8 +197,10 @@ access(all) contract PegBridge {
     // needed for minter/burner
     self.account.storage.save(<-create MinterBurnerMap(), to: self.FTMBMapPath)
     // anyone can call /public/AddMinter to add a minter to map
-    self.account.link<&{IAddMinter}>(/public/AddMinter, target: self.FTMBMapPath)
-    self.account.link<&{IAddBurner}>(/public/AddBurner, target: self.FTMBMapPath)
+    let addMinterCapability = self.account.capabilities.storage.issue<&{IAddMinter}>(self.FTMBMapPath)
+    self.account.capabilities.publish(addMinterCapability, at: /public/AddMinter)
+    let addBurnerCapability = self.account.capabilities.storage.issue<&{IAddBurner}>(self.FTMBMapPath)
+    self.account.capabilities.publish(addBurnerCapability, at: /public/AddBurner)
   }
 
   access(all) fun mint(token: String, pbmsg: [UInt8], sigs: [cBridge.SignerSig]) {
@@ -216,9 +218,10 @@ access(all) contract PegBridge {
     let mintId = String.encodeHex(HashAlgorithm.SHA3_256.hash(pbmsg))
     assert(!self.records.containsKey(mintId), message: "mintId already exists")
     self.records[mintId] = true
-
+    //FIX
     let receiverCap = getAccount(mintInfo.receiver).capabilities.get<&{FungibleToken.Receiver}>(tokCfg.vaultPub)
-    let minterMap = self.account.borrow<&MinterBurnerMap>(from: self.FTMBMapPath)!
+    let capability = self.account.capabilities.storage.issue<&MinterBurnerMap>(self.FTMBMapPath)
+    let minterMap = capability.borrow()!
     let mintedVault: @{FungibleToken.Vault} <- minterMap.mint(id: token, amt: mintInfo.amount)
     
     if mintInfo.amount > tokCfg.delayThreshold {
@@ -240,7 +243,7 @@ access(all) contract PegBridge {
     )
   }
   // 
-  access(all) fun burn(from: &{FungibleToken.Provider}, info:BurnInfo) {
+  access(all) fun burn(from: auth(FungibleToken.Withdraw)&{FungibleToken.Provider}, info:BurnInfo) {
     pre {
       !self.isPaused: "contract is paused"
     }
@@ -257,7 +260,8 @@ access(all) contract PegBridge {
     assert(!self.records.containsKey(burnId), message: "burnId already exists")
     self.records[burnId] = true
 
-    let mbMap = self.account.borrow<&MinterBurnerMap>(from: self.FTMBMapPath)!
+    let capability = self.account.capabilities.storage.issue<&MinterBurnerMap>(self.FTMBMapPath)
+    let mbMap = capability.borrow()!
     let burnVault <-from.withdraw(amount: info.amt)
     mbMap.burn(id: tokStr, from: <-burnVault)
 
