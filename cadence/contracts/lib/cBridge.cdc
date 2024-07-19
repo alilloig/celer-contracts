@@ -1,4 +1,4 @@
-import Pb from "Pb"
+import "Pb"
 
 // only need to support signer verify for now
 access(all) contract cBridge {

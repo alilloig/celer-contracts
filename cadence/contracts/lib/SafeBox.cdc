@@ -1,9 +1,9 @@
-import FungibleToken from "FungibleToken"
-import cBridge from "cBridge"
-import PbPegged from "PbPegged"
+import "FungibleToken"
+import "cBridge"
+import "PbPegged"
 // DelayedTransfer must from same account as addXfer is limited to access(account) to avoid spam
-import DelayedTransfer from "DelayedTransfer"
-import VolumeControl from "VolumeControl"
+import "DelayedTransfer"
+import "VolumeControl"
 
 // user deposit into SafeBox, cBridge will mint corresponding ERC20 tokens on specified dest chain.
 // when user burn ERC20 tokens, cBridge will withdraw FungibleTokens to user specified receiver address

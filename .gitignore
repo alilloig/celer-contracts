@@ -1,4 +1,1 @@
-        .DS_Store
-        .vscode/
-        contracts/.DS_Store
-        emulator-account.pkey
+flowdb/*

@@ -1,87 +1,153 @@
 {
 	"contracts": {
-		"FungibleToken": 	{
-			"source": "contracts/utility/flow-ft/FungibleToken.cdc",
-			"aliases": {
-				"emulator": "ee82856bf20e2aa6"
-			}
-		},
-		"NonFungibleToken": {
-			"source": "contracts/utility/flow-ft/utility/NonFungibleToken.cdc",
-			"aliases": {
-				"emulator": "ee82856bf20e2aa6"
-			}
-		},
-		"MetadataViews": {
-			"source": "contracts/utility/flow-ft/utility/MetadataViews.cdc",
-			"aliases": {
-				"emulator": "ee82856bf20e2aa6"
-			}
-		},
-		"FungibleTokenMetadataViews": {
-			"source": "contracts/utility/flow-ft/FungibleTokenMetadataViews.cdc",
-			"aliases": {
-				"emulator": "ee82856bf20e2aa6"
-			}
-		},
-		"ViewResolver": {
-			"source": "contracts/utility/flow-ft/utility/ViewResolver.cdc",
-			"aliases": {
-				"emulator": "ee82856bf20e2aa6"
-			}
-		},
 		"Burner": {
-			"source": "contracts/utility/flow-ft/utility/Burner.cdc",
+			"source": "cadence/contracts/utility/flow-ft/utility/Burner.cdc",
 			"aliases": {
-				"emulator": "ee82856bf20e2aa6"
-			}
-		},
-		"cBridge": {
-			"source": "contracts/lib/cBridge.cdc",
-			"aliases": {
-				"emulator": "ee82856bf20e2aa6"
+				"emulator": "f8d6e0586b0a20c7"
 			}
 		},
 		"DelayedTransfer": {
-			"source": "contracts/lib/DelayedTransfer.cdc",
+			"source": "cadence/contracts/lib/DelayedTransfer.cdc",
 			"aliases": {
-				"emulator": "ee82856bf20e2aa6"
+				"emulator": "e03daebed8ca0615"
 			}
-		},		
+		},
 		"FTMinterBurner": {
-			"source": "contracts/lib/FTMinterBurner.cdc",
+			"source": "cadence/contracts/lib/FTMinterBurner.cdc",
 			"aliases": {
-				"emulator": "ee82856bf20e2aa6"
+				"emulator": "e03daebed8ca0615"
 			}
-		},		
-		"Pb": {
-			"source": "contracts/lib/Pb.cdc",
+		},
+		"FungibleToken": {
+			"source": "cadence/contracts/utility/flow-ft/FungibleToken.cdc",
 			"aliases": {
-				"emulator": "ee82856bf20e2aa6"
+				"emulator": "f8d6e0586b0a20c7"
+			}
+		},
+		"FungibleTokenMetadataViews": {
+			"source": "cadence/contracts/utility/flow-ft/FungibleTokenMetadataViews.cdc",
+			"aliases": {
+				"emulator": "f8d6e0586b0a20c7"
+			}
+		},
+		"FungibleTokenSwitchboard": {
+			"source": "cadence/contracts/utility/flow-ft/FungibleTokenSwitchboard.cdc",
+			"aliases": {
+				"emulator": "f8d6e0586b0a20c7"
+			}
+		},
+		"MetadataViews": {
+			"source": "cadence/contracts/utility/flow-ft/utility/MetadataViews.cdc",
+			"aliases": {
+				"emulator": "f8d6e0586b0a20c7"
+			}
+		},
+		"NonFungibleToken": {
+			"source": "cadence/contracts/utility/flow-ft/utility/NonFungibleToken.cdc",
+			"aliases": {
+				"emulator": "f8d6e0586b0a20c7"
+			}
+		},
+		"Pb": {
+			"source": "cadence/contracts/lib/Pb.cdc",
+			"aliases": {
+				"emulator": "e03daebed8ca0615"
 			}
 		},
 		"PbPegged": {
-			"source": "contracts/lib/PbPegged.cdc",
+			"source": "cadence/contracts/lib/PbPegged.cdc",
 			"aliases": {
-				"emulator": "ee82856bf20e2aa6"
+				"emulator": "e03daebed8ca0615"
 			}
 		},
 		"PegBridge": {
-			"source": "contracts/lib/PegBridge.cdc",
+			"source": "cadence/contracts/lib/PegBridge.cdc",
 			"aliases": {
-				"emulator": "ee82856bf20e2aa6"
+				"emulator": "e03daebed8ca0615"
 			}
 		},
 		"SafeBox": {
-			"source": "contracts/lib/SafeBox.cdc",
+			"source": "cadence/contracts/lib/SafeBox.cdc",
 			"aliases": {
-				"emulator": "ee82856bf20e2aa6"
+				"emulator": "e03daebed8ca0615"
+			}
+		},
+		"ViewResolver": {
+			"source": "cadence/contracts/utility/flow-ft/utility/ViewResolver.cdc",
+			"aliases": {
+				"emulator": "f8d6e0586b0a20c7"
 			}
 		},
 		"VolumeControl": {
-			"source": "contracts/lib/VolumeControl.cdc",
+			"source": "cadence/contracts/lib/VolumeControl.cdc",
 			"aliases": {
-				"emulator": "ee82856bf20e2aa6"
+				"emulator": "e03daebed8ca0615"
+			}
+		},
+		"cBridge": {
+			"source": "cadence/contracts/lib/cBridge.cdc",
+			"aliases": {
+				"emulator": "e03daebed8ca0615"
+			}
+		},
+		"ceAVAX": {
+			"source": "cadence/contracts/coins/ceAVAX.cdc",
+			"aliases": {
+				"emulator": "f3fcd2c1a78f5eee"
+			}
+		},
+		"ceBNB": {
+			"source": "cadence/contracts/coins/ceBNB.cdc",
+			"aliases": {
+				"emulator": "f3fcd2c1a78f5eee"
+			}
+		},
+		"ceBUSD": {
+			"source": "cadence/contracts/coins/ceBUSD.cdc",
+			"aliases": {
+				"emulator": "f3fcd2c1a78f5eee"
+			}
+		},
+		"ceDAI": {
+			"source": "cadence/contracts/coins/ceDAI.cdc",
+			"aliases": {
+				"emulator": "f3fcd2c1a78f5eee"
+			}
+		},
+		"ceFTM": {
+			"source": "cadence/contracts/coins/ceFTM.cdc",
+			"aliases": {
+				"emulator": "f3fcd2c1a78f5eee"
+			}
+		},
+		"ceMATIC": {
+			"source": "cadence/contracts/coins/ceMATIC.cdc",
+			"aliases": {
+				"emulator": "f3fcd2c1a78f5eee"
+			}
+		},
+		"ceUSDT": {
+			"source": "cadence/contracts/coins/ceUSDT.cdc",
+			"aliases": {
+				"emulator": "f3fcd2c1a78f5eee"
+			}
+		},
+		"ceWBTC": {
+			"source": "cadence/contracts/coins/ceWBTC.cdc",
+			"aliases": {
+				"emulator": "f3fcd2c1a78f5eee"
+			}
+		},
+		"ceWETH": {
+			"source": "cadence/contracts/coins/ceWETH.cdc",
+			"aliases": {
+				"emulator": "f3fcd2c1a78f5eee"
+			}
+		},
+		"RLY": {
+			"source": "cadence/contracts/coins/RLY.cdc",
+			"aliases": {
+				"emulator": "f3fcd2c1a78f5eee"
 			}
 		}
 	},
@@ -92,12 +158,52 @@
 		"testnet": "access.devnet.nodes.onflow.org:9000"
 	},
 	"accounts": {
+		"celler-coins": {
+			"address": "f3fcd2c1a78f5eee",
+			"key": "d60d80500b816fad4d1a846fd0f3b75279ebec32e15353090c63f8cfb3caf862"
+		},
+		"celler-core": {
+			"address": "e03daebed8ca0615",
+			"key": "7804d8613915dfe65baa981c361b40199697f5d760107f5aaf34dfd7cf45a4a6"
+		},
 		"emulator-account": {
 			"address": "f8d6e0586b0a20c7",
-			"key": {
-				"type": "file",
-				"location": "emulator-account.pkey"
-			}
+			"key": "b6b431ec2867ebe9e8526d7c8326e8dc3e69d81d1534292e929f84b2d108361e"
+		}
+	},
+	"deployments": {
+		"emulator": {
+			"celler-coins": [
+				"ceAVAX",
+				"ceBNB",
+				"ceBUSD",
+				"ceDAI",
+				"ceFTM",
+				"ceMATIC",
+				"ceUSDT",
+				"ceWBTC",
+				"ceWETH",
+				"RLY"
+			],
+			"celler-core": [
+				"VolumeControl",
+				"DelayedTransfer",
+				"FTMinterBurner",
+				"Pb",
+				"PbPegged",
+				"PegBridge",
+				"SafeBox",
+				"cBridge"
+			],
+			"emulator-account": [
+				"FungibleToken",
+				"FungibleTokenMetadataViews",
+				"FungibleTokenSwitchboard",
+				"NonFungibleToken",
+				"MetadataViews",
+				"ViewResolver",
+				"Burner"
+			]
 		}
 	}
 }

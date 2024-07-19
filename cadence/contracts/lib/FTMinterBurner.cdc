@@ -1,6 +1,6 @@
 /// Support FT minter/burner, minimal interfaces
 /// do we want mintToAccount?
-import FungibleToken from "FungibleToken"
+import "FungibleToken"
 
 access(all) contract interface FTMinterBurner {
 

@@ -1,4 +1,4 @@
-import Pb from "Pb"
+import "Pb"
 
 access(all) contract PbPegged {
   access(all) struct Withdraw {

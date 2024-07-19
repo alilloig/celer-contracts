@@ -1,4 +1,4 @@
-import FungibleToken from "FungibleToken"
+import "FungibleToken"
 
 access(all) contract DelayedTransfer {
   // path for admin resource
