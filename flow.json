@@ -199,9 +199,6 @@
 				"FungibleToken",
 				"FungibleTokenMetadataViews",
 				"FungibleTokenSwitchboard",
-				"NonFungibleToken",
-				"MetadataViews",
-				"ViewResolver",
 				"Burner"
 			]
 		}
