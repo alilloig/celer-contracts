@@ -131,7 +131,7 @@ access(all) contract SafeBox {
     self.account.storage.save<@SafeBoxAdmin>(<- create SafeBoxAdmin(), to: self.AdminPath)
   }
 
-  access(all) fun deposit(from: &{FungibleToken.Provider}, info:DepoInfo) {
+  access(all) fun deposit(from: auth(FungibleToken.Withdraw)&{FungibleToken.Provider}, info:DepoInfo) {
     pre {
       !self.isPaused: "contract is paused"
     }
@@ -148,7 +148,7 @@ access(all) contract SafeBox {
     assert(!self.records.containsKey(depoId), message: "depoId already exists")
     self.records[depoId] = true
 
-    let recev = self.account.capabilities.get(tokenCfg.vaultPub).borrow<&{FungibleToken.Receiver}>()
+    let recev = self.account.capabilities.borrow<&{FungibleToken.Receiver}>(tokenCfg.vaultPub)
                       ?? panic("Could not borrow a reference to the receiver")
     recev.deposit(from: <-from.withdraw(amount: info.amt))
     emit Deposited(
@@ -184,7 +184,8 @@ access(all) contract SafeBox {
     assert(!self.records.containsKey(wdId), message: "wdId already exists")
     self.records[wdId] = true
     let receiverCap = getAccount(wdInfo.receiver).capabilities.get<&{FungibleToken.Receiver}>(tokCfg.vaultPub)
-    let vaultRef = self.account.borrow<&{FungibleToken.Provider}>(from: tokCfg.vaultSto) ?? panic("Could not borrow reference to the owner's Vault!")
+    let capability = self.account.capabilities.storage.issue<auth(FungibleToken.Withdraw)&{FungibleToken.Provider}>(tokCfg.vaultSto)
+    let vaultRef = capability.borrow() ?? panic("Could not borrow reference to the owner's Vault!")
     // vault that holds to deposit ft
     let vault <- vaultRef.withdraw(amount: wdInfo.amount)
 
