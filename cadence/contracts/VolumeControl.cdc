@@ -1,18 +1,15 @@
-access(all) contract VolumeControl {
-
-  access(all) entitlement Update
-
-  access(all) let AdminPath: StoragePath
+pub contract VolumeControl {
+  pub let AdminPath: StoragePath
   // ========== events ==========
-  access(all) event EpochLengthUpdated(length: UInt64)
+  pub event EpochLengthUpdated(length: UInt64)
 
-  access(all) var epochLength: UInt64 // seconds, how soon the volume in last window will be clear
+  pub var epochLength: UInt64 // seconds, how soon the volume in last window will be clear
   access(account) var epochVolumes: {String: UFix64} // the sum volume in last time window
   access(account) var lastOpTimestamps: {String: UInt64}  // unix seconds, the last time window record the volume
 
   // ========== admin resource ==========
-  access(all) resource Admin {
-    access(all) fun setEpochLength(newLength: UInt64) {
+  pub resource Admin {
+    pub fun setEpochLength(newLength: UInt64) {
       VolumeControl.epochLength = newLength
       emit EpochLengthUpdated(
         length: newLength
@@ -20,7 +17,7 @@ access(all) contract VolumeControl {
     }
 
     // createNewAdmin creates a new Admin resource
-    access(all) fun createNewAdmin(): @Admin {
+    pub fun createNewAdmin(): @Admin {
       return <-create Admin()
     }
   }
@@ -31,7 +28,7 @@ access(all) contract VolumeControl {
     self.epochVolumes = {}
     self.lastOpTimestamps = {}
     self.AdminPath = /storage/VolumeControlAdmin
-    self.account.storage.save<@Admin>(<- create Admin(), to: self.AdminPath)
+    self.account.save<@Admin>(<- create Admin(), to: self.AdminPath)
   }
 
   access(account) fun updateVolume(token: String, amt: UFix64, cap: UFix64) {
@@ -55,11 +52,11 @@ access(all) contract VolumeControl {
     self.lastOpTimestamps[token] = timestamp;
   }
 
-  access(all) fun getEpochVolume(token: String): UFix64 {
+  pub fun getEpochVolume(token: String): UFix64 {
     return self.epochVolumes[token] ?? 0.0
   }
 
-  access(all) fun getLastOpTimestamp(token: String): UInt64 {
+  pub fun getLastOpTimestamp(token: String): UInt64 {
     return self.lastOpTimestamps[token] ?? 0
   }
 }

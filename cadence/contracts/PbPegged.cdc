@@ -1,13 +1,12 @@
-import "Pb"
-
-access(all) contract PbPegged {
-  access(all) struct Withdraw {
-    access(all) var token: [UInt8]
-    access(all) var receiver: Address
-    access(all) var amount: UFix64
-    access(all) var burnAccount: String
-    access(all) var refChainId: UInt64
-    access(all) var refId: String
+import Pb from 0x08dd120226ec2213
+pub contract PbPegged {
+  pub struct Withdraw {
+    pub var token: [UInt8]
+    pub var receiver: Address
+    pub var amount: UFix64
+    pub var burnAccount: String
+    pub var refChainId: UInt64
+    pub var refId: String
     init(_ raw: [UInt8]) {
       self.token = []
       self.receiver = Address(0x0)
@@ -15,7 +14,7 @@ access(all) contract PbPegged {
       self.burnAccount = ""
       self.refChainId = 0
       self.refId = ""
-      let buf = Pb.Buffer(raw: raw)
+      let buf = Pb.Buffer(raw)
       // todo: write gen-cdc tool
       // what about token? we could save utf8 string but in cadence there is no way to use [UInt8] as string?
       // so we have to just keep [UInt8] and compare to tokenStr.utf8 in withdraw
@@ -46,7 +45,7 @@ access(all) contract PbPegged {
       }
     }
     // compare tkStr.utf8 equals self.token
-    access(all) fun eqToken(tkStr:String): Bool {
+    pub fun eqToken(tkStr:String): Bool {
       let tk = tkStr.utf8
       if tk.length == self.token.length {
         var i = 0;
@@ -62,13 +61,13 @@ access(all) contract PbPegged {
     }
   }
 
-  access(all) struct Mint {
-    access(all) var token: [UInt8]
-    access(all) var receiver: Address
-    access(all) var amount: UFix64
-    access(all) var depositor: String
-    access(all) var refChainId: UInt64
-    access(all) var refId: String
+  pub struct Mint {
+    pub var token: [UInt8]
+    pub var receiver: Address
+    pub var amount: UFix64
+    pub var depositor: String
+    pub var refChainId: UInt64
+    pub var refId: String
     init(_ raw: [UInt8]) {
       self.token = []
       self.receiver = Address(0x0)
@@ -76,7 +75,7 @@ access(all) contract PbPegged {
       self.depositor = ""
       self.refChainId = 0
       self.refId = ""
-      let buf = Pb.Buffer(raw: raw)
+      let buf = Pb.Buffer(raw)
       // todo: write gen-cdc tool
       // what about token? we could save utf8 string but in cadence there is no way to use [UInt8] as string?
       // so we have to just keep [UInt8] and compare to tokenStr.utf8 in withdraw
@@ -108,7 +107,7 @@ access(all) contract PbPegged {
     }
 
     // compare tkStr.utf8 equals self.token
-    access(all) fun eqToken(tkStr:String): Bool {
+    pub fun eqToken(tkStr:String): Bool {
       let tk = tkStr.utf8
       if tk.length == self.token.length {
         var i = 0;

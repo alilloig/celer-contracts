@@ -1,27 +1,27 @@
-import "FungibleToken"
+import FungibleToken from 0xf233dcee88fe0abe
 
-access(all) contract DelayedTransfer {
+pub contract DelayedTransfer {
   // path for admin resource
-  access(all) let AdminPath: StoragePath
+  pub let AdminPath: StoragePath
   // ========== events ==========
-  access(all) event DelayedTransferAdded(id: String)
-  access(all) event DelayedTransferExecuted(
+  pub event DelayedTransferAdded(id: String)
+  pub event DelayedTransferExecuted(
     id: String,
     receiver: Address,
     token: String,
     amount: UFix64
   )
-  access(all) event DelayPeriodUpdated(period: UInt64)
+  pub event DelayPeriodUpdated(period: UInt64)
 
   // ========== structs ==========
   /// one delayed transfer info, will release if current block.timestamp >= info.blockTs + delayPeriod
-  access(all) struct Info {
+  pub struct Info {
     // block.timestamp when this xfer is added
-    access(all) let blockTs: UFix64
+    pub let blockTs: UFix64
     // .borrow then .deposit
-    access(all) let receiverCap: Capability<&{FungibleToken.Receiver}>
+    pub let receiverCap: Capability<&AnyResource{FungibleToken.Receiver}>
 
-    init(blockTs: UFix64, receiverCap: Capability<&{FungibleToken.Receiver}>){
+    init(blockTs: UFix64, receiverCap: Capability<&AnyResource{FungibleToken.Receiver}>){
       self.blockTs = blockTs
       self.receiverCap = receiverCap
     }
@@ -30,24 +30,24 @@ access(all) contract DelayedTransfer {
   // ========== contract states and maps ==========
   // how many seconds for delayed transfer to wait,
   // default is 3600*24 = 86400, can be changed by Admin
-  access(all) var delayPeriod: UInt64
+  pub var delayPeriod: UInt64
   // map from unique ID string to Info struct and from vault, have to keep fromVault separate as struct can't include Resource
   // and Capability can only be acquired by path which doesn't exist in mint case
   access(account) var infoMap: {String: Info}
-  access(account) var vaultMap: @{String: {FungibleToken.Vault}}
+  access(account) var vaultMap: @{String: FungibleToken.Vault}
   // when SafeBox/PegBridge is paused, this will also be paused
-  access(all) var isPaused: Bool
+  pub var isPaused: Bool
 
   // ========== resource ==========
-  access(all) resource Admin {
-    access(all) fun setDelayPeriod(newP: UInt64) {
+  pub resource Admin {
+    pub fun setDelayPeriod(newP: UInt64) {
       DelayedTransfer.delayPeriod = newP
       emit DelayPeriodUpdated(
         period: newP
       )
     }
     // createNewAdmin creates a new Admin resource
-    access(all) fun createNewAdmin(): @Admin {
+    pub fun createNewAdmin(): @Admin {
       return <-create Admin()
     }
   }
@@ -59,7 +59,7 @@ access(all) contract DelayedTransfer {
     self.vaultMap <- {}
     self.isPaused = false
     self.AdminPath = /storage/DelayedTransferAdmin
-    self.account.storage.save<@Admin>(<- create Admin(), to: self.AdminPath)
+    self.account.save<@Admin>(<- create Admin(), to: self.AdminPath)
   }
 
   access(account) fun pause() {
@@ -70,7 +70,7 @@ access(all) contract DelayedTransfer {
   }
 
   // only accessible by contracts in the same account to avoid spam (storage cost and valid ids)
-  access(account) fun addDelayXfer(id: String, receiverCap: Capability<&{FungibleToken.Receiver}>, from: @{FungibleToken.Vault}) {
+  access(account) fun addDelayXfer(id: String, receiverCap: Capability<&AnyResource{FungibleToken.Receiver}>, from: @FungibleToken.Vault) {
     pre {
       !self.infoMap.containsKey(id): "id already exists!"
       !self.vaultMap.containsKey(id): "id already exists!"
@@ -107,11 +107,11 @@ access(all) contract DelayedTransfer {
     )
   }
 
-  access(all) fun delayTransferExist(id: String): Bool {
+  pub fun delayTransferExist(id: String): Bool {
     return self.infoMap.containsKey(id)
   }
 
-  access(all) fun getDelayBlockTs(id: String): UFix64 {
+  pub fun getDelayBlockTs(id: String): UFix64 {
     let info = self.infoMap[id] ?? panic("token not support in contract")
     return info.blockTs
   }

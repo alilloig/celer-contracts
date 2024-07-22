@@ -1,22 +1,22 @@
 /// PegBridge support mint via co-signed message, and burn, will call corresponding PegToken contract
 /// Account of this contract must has Minter/Burner resource for corresponding PegToken
 /// interfaces/resources in FTMinterBurner are needed to avoid token specific types
-import "FungibleToken"
-import "cBridge"
-import "PbPegged"
-import "DelayedTransfer"
-import "VolumeControl"
+import FungibleToken from 0xf233dcee88fe0abe
+import cBridge from 0x08dd120226ec2213
+import PbPegged from 0x08dd120226ec2213
+import DelayedTransfer from 0x08dd120226ec2213
+import VolumeControl from 0x08dd120226ec2213
 // FTMinterBurner is needed for mint/burn
-import "FTMinterBurner"
+import FTMinterBurner from 0x08dd120226ec2213
 
-access(all) contract PegBridge {
+pub contract PegBridge {
   // path for admin resource
-  access(all) let AdminPath: StoragePath
+  pub let AdminPath: StoragePath
   // path for FTMinterBurnerMap resource
-  access(all) let FTMBMapPath: StoragePath
+  pub let FTMBMapPath: StoragePath
 
   // ========== events ==========
-  access(all) event Mint(
+  pub event Mint(
     mintId: String,
     receiver: Address,
     token: String,
@@ -26,7 +26,7 @@ access(all) contract PegBridge {
     depositor: String
   )
 
-  access(all) event Burn(
+  pub event Burn(
     burnId: String,
     burner: Address,
     token: String,
@@ -38,14 +38,14 @@ access(all) contract PegBridge {
 
   // ========== structs ==========
   // token vault type identifier string to its config so we can borrow to deposit minted token
-  access(all) struct TokenCfg {
-    access(all) let vaultPub: PublicPath
-    access(all) let minBurn: UFix64
-    access(all) let maxBurn: UFix64
+  pub struct TokenCfg {
+    pub let vaultPub: PublicPath
+    pub let minBurn: UFix64
+    pub let maxBurn: UFix64
     // if mint amount > delayThreshold, put into delayed transfer map
-    access(all) let delayThreshold: UFix64
+    pub let delayThreshold: UFix64
     // used for volume controller
-    access(all) let cap: UFix64
+    pub let cap: UFix64
 
     init(vaultPub:PublicPath, minBurn: UFix64, maxBurn: UFix64, delayThreshold: UFix64, cap: UFix64) {
       self.vaultPub = vaultPub
@@ -57,11 +57,11 @@ access(all) contract PegBridge {
   }
 
   // info about one user burn
-  access(all) struct BurnInfo {
-    access(all) let amt: UFix64
-    access(all) let toChId: UInt64
-    access(all) let toAddr: String
-    access(all) let nonce: UInt64
+  pub struct BurnInfo {
+    pub let amt: UFix64
+    pub let toChId: UInt64
+    pub let toAddr: String
+    pub let nonce: UInt64
 
     init(amt: UFix64, toChId: UInt64, toAddr: String, nonce: UInt64) {
       self.amt = amt
@@ -73,11 +73,11 @@ access(all) contract PegBridge {
 
   // ========== contract states and maps ==========
   // unique chainid required by cbridge system
-  access(all) let chainID: UInt64
+  pub let chainID: UInt64
   // domainPrefix to ensure no replay on co-sign msgs
   access(contract) let domainPrefix: [UInt8]
   // similar to solidity pausable
-  access(all) var isPaused: Bool
+  pub var isPaused: Bool
 
   // key is token vault identifier, eg. A.1122334455667788.ExampleToken.Vault
   access(account) var tokMap: {String: TokenCfg}
@@ -85,59 +85,59 @@ access(all) contract PegBridge {
   // key is calculated mintID or burnID
   access(account) var records: {String: Bool}
 
-  access(all) fun getTokenConfig(identifier: String): TokenCfg {
+  pub fun getTokenConfig(identifier: String): TokenCfg {
       let tokenCfg = self.tokMap[identifier]!
       return tokenCfg
   }
 
-  access(all) fun recordExist(id: String): Bool {
+  pub fun recordExist(id: String): Bool {
       return self.records.containsKey(id)
   }
 
   // ========== resources ==========
-  access(all) resource PegBridgeAdmin {
-    access(all) fun addTok(identifier: String, tok: TokenCfg) {
+  pub resource PegBridgeAdmin {
+    pub fun addTok(identifier: String, tok: TokenCfg) {
       assert(!PegBridge.tokMap.containsKey(identifier), message: "this token already exist")
       PegBridge.tokMap[identifier] = tok
     }
 
-    access(all) fun rmTok(identifier: String) {
+    pub fun rmTok(identifier: String) {
       assert(PegBridge.tokMap.containsKey(identifier), message: "this token do not exist")
       PegBridge.tokMap.remove(key: identifier)
     }
 
-    access(all) fun pause() {
+    pub fun pause() {
       PegBridge.isPaused = true
       DelayedTransfer.pause()
     }
-    access(all) fun unPause() {
+    pub fun unPause() {
       PegBridge.isPaused = false
       DelayedTransfer.unPause()
     }
 
-    access(all) fun createPegBridgeAdmin(): @PegBridgeAdmin {
+    pub fun createPegBridgeAdmin(): @PegBridgeAdmin {
         return <-create PegBridgeAdmin()
     }
   }
 
   // token admin must create minter/burner resource and call add
-  access(all) resource interface IAddMinter {
-    access(all) fun addMinter(minter: @{FTMinterBurner.IMinter})
+  pub resource interface IAddMinter {
+    pub fun addMinter(minter: @FTMinterBurner.Minter)
   }
-  access(all) resource interface IAddBurner {
-    access(all) fun addBurner(burner: @{FTMinterBurner.IBurner})
+  pub resource interface IAddBurner {
+    pub fun addBurner(burner: @FTMinterBurner.Burner)
   }
 
   /// MinterBurnerMap support public add minter/burner by token admin,
   /// del minter/burner by account, and mint/burn corresponding ft
   /// when called by this contract
-  access(all) resource MinterBurnerMap: IAddMinter, IAddBurner {
+  pub resource MinterBurnerMap: IAddMinter, IAddBurner {
     // map from token vault identifier to minter or burner resource
-    access(account) var hasMinters: @{String: {FTMinterBurner.IMinter}}
-    access(account) var hasBurners: @{String: {FTMinterBurner.IBurner}}
+    access(account) var hasMinters: @{String: FTMinterBurner.Minter}
+    access(account) var hasBurners: @{String: FTMinterBurner.Burner}
 
     // called by token admin
-    access(all) fun addMinter(minter: @{FTMinterBurner.IMinter}) {
+    pub fun addMinter(minter: @FTMinterBurner.Minter) {
       let idStr = minter.getType().identifier
       let newIdStr = idStr.slice(from: 0, upTo: idStr.length - 6).concat("Vault")
       // only supported token minter can be added
@@ -146,7 +146,7 @@ access(all) contract PegBridge {
       let oldMinter <- self.hasMinters[newIdStr] <- minter
       destroy oldMinter
     }
-    access(all) fun addBurner(burner: @{FTMinterBurner.IBurner}) {
+    pub fun addBurner(burner: @FTMinterBurner.Burner) {
       let idStr = burner.getType().identifier
       let newIdStr = idStr.slice(from: 0, upTo: idStr.length - 6).concat("Vault")
       // only supported token burner can be added
@@ -166,17 +166,21 @@ access(all) contract PegBridge {
     }
 
     // for extra security, only this contract can call mint/burn
-    access(contract) fun mint(id:String, amt: UFix64): @{FungibleToken.Vault} {
-      let minter = (&self.hasMinters[id] as &{FTMinterBurner.IMinter}?)!
+    access(contract) fun mint(id:String, amt: UFix64): @FungibleToken.Vault {
+      let minter = (&self.hasMinters[id] as &FTMinterBurner.Minter?)!
       return <- minter.mintTokens(amount: amt)
     }
-    access(contract) fun burn(id:String, from: @{FungibleToken.Vault}) {
-      let burner = (&self.hasBurners[id] as &{FTMinterBurner.IBurner}?)!
+    access(contract) fun burn(id:String, from: @FungibleToken.Vault) {
+      let burner = (&self.hasBurners[id] as &FTMinterBurner.Burner?)!
       burner.burnTokens(from: <- from)
     }
     init(){
       self.hasMinters <- {}
       self.hasBurners <- {}
+    }
+    destroy() {
+      destroy self.hasMinters
+      destroy self.hasBurners
     }
   }
 
@@ -191,19 +195,17 @@ access(all) contract PegBridge {
     self.tokMap = {}
 
     self.AdminPath = /storage/PegBridgeAdmin
-    self.account.storage.save<@PegBridgeAdmin>(<- create PegBridgeAdmin(), to: self.AdminPath)
+    self.account.save<@PegBridgeAdmin>(<- create PegBridgeAdmin(), to: self.AdminPath)
 
     self.FTMBMapPath = /storage/FTMinterBurnerMap
     // needed for minter/burner
-    self.account.storage.save(<-create MinterBurnerMap(), to: self.FTMBMapPath)
+    self.account.save(<-create MinterBurnerMap(), to: self.FTMBMapPath)
     // anyone can call /public/AddMinter to add a minter to map
-    let addMinterCapability = self.account.capabilities.storage.issue<&{IAddMinter}>(self.FTMBMapPath)
-    self.account.capabilities.publish(addMinterCapability, at: /public/AddMinter)
-    let addBurnerCapability = self.account.capabilities.storage.issue<&{IAddBurner}>(self.FTMBMapPath)
-    self.account.capabilities.publish(addBurnerCapability, at: /public/AddBurner)
+    self.account.link<&MinterBurnerMap{IAddMinter}>(/public/AddMinter, target: self.FTMBMapPath)
+    self.account.link<&MinterBurnerMap{IAddBurner}>(/public/AddBurner, target: self.FTMBMapPath)
   }
 
-  access(all) fun mint(token: String, pbmsg: [UInt8], sigs: [cBridge.SignerSig]) {
+  pub fun mint(token: String, pbmsg: [UInt8], sigs: [cBridge.SignerSig]) {
     pre {
       !self.isPaused: "contract is paused"
     }
@@ -218,11 +220,10 @@ access(all) contract PegBridge {
     let mintId = String.encodeHex(HashAlgorithm.SHA3_256.hash(pbmsg))
     assert(!self.records.containsKey(mintId), message: "mintId already exists")
     self.records[mintId] = true
-    //FIX
-    let receiverCap = getAccount(mintInfo.receiver).capabilities.get<&{FungibleToken.Receiver}>(tokCfg.vaultPub)
-    let capability = self.account.capabilities.storage.issue<&MinterBurnerMap>(self.FTMBMapPath)
-    let minterMap = capability.borrow()!
-    let mintedVault: @{FungibleToken.Vault} <- minterMap.mint(id: token, amt: mintInfo.amount)
+
+    let receiverCap = getAccount(mintInfo.receiver).getCapability<&{FungibleToken.Receiver}>(tokCfg.vaultPub)
+    let minterMap = self.account.borrow<&MinterBurnerMap>(from: self.FTMBMapPath)!
+    let mintedVault: @FungibleToken.Vault <- minterMap.mint(id: token, amt: mintInfo.amount)
     
     if mintInfo.amount > tokCfg.delayThreshold {
       // add to delayed xfer
@@ -243,7 +244,7 @@ access(all) contract PegBridge {
     )
   }
   // 
-  access(all) fun burn(from: auth(FungibleToken.Withdraw)&{FungibleToken.Provider}, info:BurnInfo) {
+  pub fun burn(from: &AnyResource{FungibleToken.Provider}, info:BurnInfo) {
     pre {
       !self.isPaused: "contract is paused"
     }
@@ -260,8 +261,7 @@ access(all) contract PegBridge {
     assert(!self.records.containsKey(burnId), message: "burnId already exists")
     self.records[burnId] = true
 
-    let capability = self.account.capabilities.storage.issue<&MinterBurnerMap>(self.FTMBMapPath)
-    let mbMap = capability.borrow()!
+    let mbMap = self.account.borrow<&MinterBurnerMap>(from: self.FTMBMapPath)!
     let burnVault <-from.withdraw(amount: info.amt)
     mbMap.burn(id: tokStr, from: <-burnVault)
 
@@ -276,7 +276,7 @@ access(all) contract PegBridge {
     )
   }
   // large amount mint
-  access(all) fun executeDelayedTransfer(mintId: String) {
+  pub fun executeDelayedTransfer(mintId: String) {
     pre {
       !self.isPaused: "contract is paused"
     }
