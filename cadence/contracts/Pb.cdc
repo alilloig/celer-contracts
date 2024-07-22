@@ -1,44 +1,44 @@
-pub contract Pb {
+access(all) contract Pb {
   /// only support Varint and LengthDelim for now
-  pub enum WireType: UInt8 {
-    pub case Varint
-    pub case Fixed64
-    pub case LengthDelim
-    pub case StartGroup
-    pub case EndGroup
-    pub case Fixed32
+  access(all) enum WireType: UInt8 {
+    access(all) case Varint
+    access(all) case Fixed64
+    access(all) case LengthDelim
+    access(all) case StartGroup
+    access(all) case EndGroup
+    access(all) case Fixed32
   }
 
-  pub struct TagType {
-    pub let tag: UInt64
-    pub let wt: WireType
+  access(all) struct TagType {
+    access(all) let tag: UInt64
+    access(all) let wt: WireType
     init(tag: UInt64, wt: UInt8){
       self.tag = tag
       self.wt = WireType(rawValue: wt)!
     }
   }
 
-  pub struct Buffer {
-    pub var idx: Int
-    pub let b: [UInt8] // readonly of original pb msg
+  access(all) struct Buffer {
+    access(all) var idx: Int
+    access(all) let b: [UInt8] // readonly of original pb msg
 
     init(raw: [UInt8]) {
       self.idx = 0
       self.b = raw
     }
     // if idx >= b.length, means we're done
-    pub fun hasMore(): Bool {
+    access(all) fun hasMore(): Bool {
       return self.idx < self.b.length
     }
 
     // has to use struct as cadence can has only single return
-    pub fun decKey(): TagType {
+    access(all) fun decKey(): TagType {
       let v = self.decVarint()
       return TagType(tag: v/8, wt: UInt8(v % 8) )
     }
   
     // modify self.idx
-    pub fun decVarint(): UInt64 {
+    access(all) fun decVarint(): UInt64 {
       var ret: UInt64 = 0
       // zero-copy for lower gas cost even though it may not matter
       var i = 0
@@ -55,7 +55,7 @@ pub contract Pb {
       return ret
     }
     // modify self.idx
-    pub fun decBytes(): [UInt8] {
+    access(all) fun decBytes(): [UInt8] {
       let len = self.decVarint()
       let end = self.idx + Int(len)
       assert(end <= self.b.length, message: "invalid bytes length: ".concat(end.toString()))
@@ -71,7 +71,7 @@ pub contract Pb {
   }
 
   // raw is UInt64 big endian, raw.length <= 8
-  pub fun toUInt64(_ raw: [UInt8]): UInt64 {
+  access(all) fun toUInt64(_ raw: [UInt8]): UInt64 {
     let rawLen = raw.length
     assert(rawLen<=8, message: "invalid raw length for UInt64")
     var ret: UInt64 = 0
@@ -85,7 +85,7 @@ pub contract Pb {
   }
 
   // raw is UInt256 big endian, raw.length <= 32
-  pub fun toUInt256(_ raw: [UInt8]): UInt256 {
+  access(all) fun toUInt256(_ raw: [UInt8]): UInt256 {
     let rawLen = raw.length
     assert(rawLen<=32, message: "invalid raw length for UInt256")
     var ret: UInt256 = 0
@@ -98,17 +98,17 @@ pub contract Pb {
     return ret
   }
 
-  pub fun toAddress(_ raw: [UInt8]): Address {
+  access(all) fun toAddress(_ raw: [UInt8]): Address {
     return Address(self.toUInt64(raw))
   }
 
-  pub fun toUFix64(_ raw: [UInt8]): UFix64 {
+  access(all) fun toUFix64(_ raw: [UInt8]): UFix64 {
     let val = self.toUInt64(raw)
     return UFix64(val/100_000_000) + UFix64(val % 100_000_000)/100_000_000.0
   }
 
   /// return hex string!
-  pub fun toString(_ raw: [UInt8]): String {
+  access(all) fun toString(_ raw: [UInt8]): String {
     return String.encodeHex(raw)
   }
 }
