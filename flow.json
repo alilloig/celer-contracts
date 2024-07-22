@@ -191,9 +191,33 @@
 				"FTMinterBurner",
 				"Pb",
 				"PbPegged",
-				"PegBridge",
-				"SafeBox",
-				"cBridge"
+				{
+					"name": "PegBridge",
+					"args": [
+						{
+							"type": "UInt64",
+							"value": "1"
+						}
+					]
+				},
+				{
+					"name": "SafeBox",
+					"args": [
+						{
+							"type": "UInt64",
+							"value": "1"
+						}
+					]
+				},
+				{
+					"name": "cBridge",
+					"args": [
+						{
+							"type": "UInt64",
+							"value": "1"
+						}
+					]
+				}
 			],
 			"emulator-account": [
 				"FungibleToken",
