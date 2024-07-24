@@ -1,5 +1,6 @@
 /// Canonical ceDAI on Flow
 import "FungibleToken"
+import "FungibleTokenMetadataViews"
 import "FTMinterBurner"
 
 access(all) contract ceDAI: FungibleToken, FTMinterBurner {
@@ -7,6 +8,11 @@ access(all) contract ceDAI: FungibleToken, FTMinterBurner {
     access(all) let AdminPath: StoragePath
     /// Total supply of tokens in existence, initial 0, and increase when new tokens are minted
     access(all) var totalSupply: UFix64
+
+    /// Storage and Public Paths
+    access(all) let VaultStoragePath: StoragePath
+    access(all) let VaultPublicPath: PublicPath
+    access(all) let ReceiverPublicPath: PublicPath
 
     /// TokensInitialized
     ///
@@ -107,23 +113,19 @@ access(all) contract ceDAI: FungibleToken, FTMinterBurner {
         }
     
         access(all) fun createEmptyVault(): @ceDAI.Vault {
-            //panic("TODO")
             return <-create Vault(balance: 0.0)
         }
 
         access(all) view fun isAvailableToWithdraw(amount: UFix64): Bool {
-            //panic("TODO")
             return amount <= self.balance
         }
 
         access(all) view fun getViews(): [Type] {
-            //panic("TODO")
-            return []
+            return ceDAI.getContractViews(resourceType: nil)
         }
 
         access(all) fun resolveView(_ view: Type): AnyStruct? {
-            //panic("TODO")
-            return nil
+            return ceDAI.resolveContractView(resourceType: nil, viewType: view)
         }
 }
 
@@ -212,6 +214,11 @@ access(all) contract ceDAI: FungibleToken, FTMinterBurner {
 
     init() {
         self.totalSupply = 0.0
+
+        self.VaultStoragePath = /storage/ceDAIVault
+        self.VaultPublicPath = /public/ceDAIVault
+        self.ReceiverPublicPath = /public/ceDAIReceiver
+
         // account owner only has admin resource, no vault as tokens are only minted later
         let admin <- create Administrator()
         self.AdminPath = /storage/ceDAIAdmin
@@ -222,12 +229,23 @@ access(all) contract ceDAI: FungibleToken, FTMinterBurner {
     }
 
     access(all) view fun getContractViews(resourceType: Type?): [Type] {
-        //panic("TODO")
-        return []
+        return [Type<FungibleTokenMetadataViews.FTVaultData>()]
     }
 
     access(all) fun resolveContractView(resourceType: Type?, viewType: Type): AnyStruct? {
-        //panic("TODO")
+        switch viewType {
+            case Type<FungibleTokenMetadataViews.FTVaultData>():
+                return FungibleTokenMetadataViews.FTVaultData(
+                    storagePath: self.VaultStoragePath,
+                    receiverPath: self.ReceiverPublicPath,
+                    metadataPath: self.VaultPublicPath,
+                    receiverLinkedType: Type<&ceDAI.Vault>(),
+                    metadataLinkedType: Type<&ceDAI.Vault>(),
+                    createEmptyVaultFunction: (fun(): @{FungibleToken.Vault} {
+                        return <-self.createEmptyVault(vaultType: Type<@ceDAI.Vault>())
+                    })
+                )
+        }
         return nil
     }
 }

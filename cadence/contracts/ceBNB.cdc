@@ -1,5 +1,6 @@
 /// Canonical ceBNB on Flow
 import "FungibleToken"
+import "FungibleTokenMetadataViews"
 import "FTMinterBurner"
 
 access(all) contract ceBNB: FungibleToken, FTMinterBurner {
@@ -7,6 +8,11 @@ access(all) contract ceBNB: FungibleToken, FTMinterBurner {
     access(all) let AdminPath: StoragePath
     /// Total supply of tokens in existence, initial 0, and increase when new tokens are minted
     access(all) var totalSupply: UFix64
+
+    /// Storage and Public Paths
+    access(all) let VaultStoragePath: StoragePath
+    access(all) let VaultPublicPath: PublicPath
+    access(all) let ReceiverPublicPath: PublicPath
 
     /// TokensInitialized
     ///
@@ -45,12 +51,23 @@ access(all) contract ceBNB: FungibleToken, FTMinterBurner {
 
 
     access(all) view fun getContractViews(resourceType: Type?): [Type] {
-        // TODO
-        return []
+        return [Type<FungibleTokenMetadataViews.FTVaultData>()]
     }
 
     access(all) fun resolveContractView(resourceType: Type?, viewType: Type): AnyStruct? {
-        // panic("TODO")
+        switch viewType {
+            case Type<FungibleTokenMetadataViews.FTVaultData>():
+                return FungibleTokenMetadataViews.FTVaultData(
+                    storagePath: self.VaultStoragePath,
+                    receiverPath: self.ReceiverPublicPath,
+                    metadataPath: self.VaultPublicPath,
+                    receiverLinkedType: Type<&ceBNB.Vault>(),
+                    metadataLinkedType: Type<&ceBNB.Vault>(),
+                    createEmptyVaultFunction: (fun(): @{FungibleToken.Vault} {
+                        return <-self.createEmptyVault(vaultType: Type<@ceBNB.Vault>())
+                    })
+                )
+        }
         return nil
     }
 
@@ -127,13 +144,11 @@ access(all) contract ceBNB: FungibleToken, FTMinterBurner {
         }
 
         access(all) view fun getViews(): [Type] {
-            //panic("TODO")
-            return []
+            return ceBNB.getContractViews(resourceType: nil)
         }
 
         access(all) fun resolveView(_ view: Type): AnyStruct? {
-            //panic("TODO")
-            return nil
+            return ceBNB.resolveContractView(resourceType: nil, viewType: view)
         }
 }
 
@@ -222,6 +237,11 @@ access(all) contract ceBNB: FungibleToken, FTMinterBurner {
 
     init() {
         self.totalSupply = 0.0
+
+        self.VaultStoragePath = /storage/ceBNBVault
+        self.VaultPublicPath = /public/ceBNBVault
+        self.ReceiverPublicPath = /public/ceBNBReceiver
+
         // account owner only has admin resource, no vault as tokens are only minted later
         let admin <- create Administrator()
         self.AdminPath = /storage/ceBNBAdmin

@@ -1,5 +1,6 @@
 /// Canonical ceBUSD on Flow
 import "FungibleToken"
+import "FungibleTokenMetadataViews"
 import "FTMinterBurner"
 
 access(all) contract ceBUSD: FungibleToken, FTMinterBurner {
@@ -7,6 +8,11 @@ access(all) contract ceBUSD: FungibleToken, FTMinterBurner {
     access(all) let AdminPath: StoragePath
     /// Total supply of tokens in existence, initial 0, and increase when new tokens are minted
     access(all) var totalSupply: UFix64
+
+    /// Storage and Public Paths
+    access(all) let VaultStoragePath: StoragePath
+    access(all) let VaultPublicPath: PublicPath
+    access(all) let ReceiverPublicPath: PublicPath
 
     /// TokensInitialized
     ///
@@ -107,23 +113,19 @@ access(all) contract ceBUSD: FungibleToken, FTMinterBurner {
         }
     
         access(all) fun createEmptyVault(): @{FungibleToken.Vault} {
-            //panic("TODO")
             return <-create Vault(balance: 0.0)
         }
 
         access(all) view fun isAvailableToWithdraw(amount: UFix64): Bool {
-            //panic("TODO")
             return amount <= self.balance
         }
 
         access(all) view fun getViews(): [Type] {
-            //panic("TODO")
-            return []
+            return ceBUSD.getContractViews(resourceType: nil)
         }
 
         access(all) fun resolveView(_ view: Type): AnyStruct? {
-            //panic("TODO")
-            return nil
+            return ceBUSD.resolveContractView(resourceType: nil, viewType: view)
         }
 }
 
@@ -212,7 +214,12 @@ access(all) contract ceBUSD: FungibleToken, FTMinterBurner {
 
     init() {
         self.totalSupply = 0.0
-        // account onwer only has admin resource, no vault as tokens are only minted later
+
+        self.VaultStoragePath = /storage/ceBUSDVault
+        self.VaultPublicPath = /public/ceBUSDVault
+        self.ReceiverPublicPath = /public/ceBUSDReceiver
+
+        // account owner only has admin resource, no vault as tokens are only minted later
         let admin <- create Administrator()
         self.AdminPath = /storage/ceBUSDAdmin
         self.account.storage.save(<-admin, to: self.AdminPath)
@@ -222,12 +229,23 @@ access(all) contract ceBUSD: FungibleToken, FTMinterBurner {
     }
 
     access(all) view fun getContractViews(resourceType: Type?): [Type] {
-        //panic("TODO")
-        return [] 
+        return [Type<FungibleTokenMetadataViews.FTVaultData>()]
     }
 
     access(all) fun resolveContractView(resourceType: Type?, viewType: Type): AnyStruct? {
-        //panic("TODO")
+        switch viewType {
+            case Type<FungibleTokenMetadataViews.FTVaultData>():
+                return FungibleTokenMetadataViews.FTVaultData(
+                    storagePath: self.VaultStoragePath,
+                    receiverPath: self.ReceiverPublicPath,
+                    metadataPath: self.VaultPublicPath,
+                    receiverLinkedType: Type<&ceBUSD.Vault>(),
+                    metadataLinkedType: Type<&ceBUSD.Vault>(),
+                    createEmptyVaultFunction: (fun(): @{FungibleToken.Vault} {
+                        return <-self.createEmptyVault(vaultType: Type<@ceBUSD.Vault>())
+                    })
+                )
+        }
         return nil
     }
 }

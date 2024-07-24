@@ -1,5 +1,6 @@
 /// Canonical ceAVAX on Flow
 import "FungibleToken"
+import "FungibleTokenMetadataViews"
 import "FTMinterBurner"
 
 access(all) contract ceAVAX: FungibleToken, FTMinterBurner {
@@ -7,6 +8,11 @@ access(all) contract ceAVAX: FungibleToken, FTMinterBurner {
     access(all) let AdminPath: StoragePath
     /// Total supply of tokens in existence, initial 0, and increase when new tokens are minted
     access(all) var totalSupply: UFix64
+
+    /// Storage and Public Paths
+    access(all) let VaultStoragePath: StoragePath
+    access(all) let VaultPublicPath: PublicPath
+    access(all) let ReceiverPublicPath: PublicPath
 
     /// TokensInitialized
     ///
@@ -44,12 +50,23 @@ access(all) contract ceAVAX: FungibleToken, FTMinterBurner {
     access(all) event BurnerCreated()
 
     access(all) view fun getContractViews(resourceType: Type?): [Type] {
-        //TODO
-        return []
+        return [Type<FungibleTokenMetadataViews.FTVaultData>()]
     }
 
     access(all) fun resolveContractView(resourceType: Type?, viewType: Type): AnyStruct? {
-        // TODO
+        switch viewType {
+            case Type<FungibleTokenMetadataViews.FTVaultData>():
+                return FungibleTokenMetadataViews.FTVaultData(
+                    storagePath: self.VaultStoragePath,
+                    receiverPath: self.ReceiverPublicPath,
+                    metadataPath: self.VaultPublicPath,
+                    receiverLinkedType: Type<&ceAVAX.Vault>(),
+                    metadataLinkedType: Type<&ceAVAX.Vault>(),
+                    createEmptyVaultFunction: (fun(): @{FungibleToken.Vault} {
+                        return <-self.createEmptyVault(vaultType: Type<@ceAVAX.Vault>())
+                    })
+                )
+        }
         return nil
     }
 
@@ -125,13 +142,11 @@ access(all) contract ceAVAX: FungibleToken, FTMinterBurner {
         }
 
         access(all) view fun getViews(): [Type] {
-            // TODO
-            return []
+            return ceAVAX.getContractViews(resourceType: nil)
         }
 
         access(all) fun resolveView(_ view: Type): AnyStruct? {
-            // TODO
-            return nil
+            return ceAVAX.resolveContractView(resourceType: nil, viewType: view)
         }
 }
 
@@ -220,6 +235,11 @@ access(all) contract ceAVAX: FungibleToken, FTMinterBurner {
 
     init() {
         self.totalSupply = 0.0
+
+        self.VaultStoragePath = /storage/ceAVAXVault
+        self.VaultPublicPath = /public/ceAVAXVault
+        self.ReceiverPublicPath = /public/ceAVAXReceiver
+
         // account owner only has admin resource, no vault as tokens are only minted later
         let admin <- create Administrator()
         self.AdminPath = /storage/ceAVAXAdmin
