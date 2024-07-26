@@ -4,8 +4,8 @@ import "SafeBox"
     transaction() {
       let provRef: &{FungibleToken.Provider}
 
-      prepare(acct: &Account) {
-        self.provRef = acct.borrow<&{FungibleToken.Provider}>(from: /storage/USDCVault) ?? panic("Could not borrow a reference to the owner's vault")
+      prepare(acct: auth(Storage) &Account) {
+        self.provRef = acct.storage.borrow<&{FungibleToken.Provider}>(from: /storage/USDCVault) ?? panic("Could not borrow a reference to the owner's vault")
       }
 
       execute {
