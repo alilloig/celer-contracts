@@ -1,30 +1,30 @@
-import Pb from 0x08dd120226ec2213
-// only need to support signer verify for now
-pub contract cBridge {
+import "Pb"
 
-    pub event SignersUpdated(
+// only need to support signer verify for now
+access(all) contract cBridge {
+
+    access(all) event SignersUpdated(
       signers: {String: UInt256}
     )
 
     // path for admin resource
-    pub let AdminPath: StoragePath
+    access(all) let AdminPath: StoragePath
     // unique chainid required by cbridge system
-    pub let chainID: UInt64
+    access(all) let chainID: UInt64
     access(contract) let domainPrefix: [UInt8]
     // save map from pubkey to power, only visible in this contract to extra safety
-    // as hex string is key, MUST ensure lower case to avoid duplicates
     access(contract) var signers: {String: UInt256}
-    pub var totalPower: UInt256
+    access(all) var totalPower: UInt256
     // block height when signers are last updated by sigs
     // flow block.timestamp is UFix64 so hard to use
-    pub var signerUpdateBlock: UInt64
+    access(all) var signerUpdateBlock: UInt64
 
     // at first we require pubkey to be also present in SignerSig, so verify can just do map lookup in signers
     // but this make other components in the system to be aware of pubkeys which is hard to do
     // so without pubkey, we just loop over all signers and call verify, it's less efficient but won't be an issue
     // as there won't be many signers. we keep struct for future flexibility but pubkey field is NOT needed.
-    pub struct SignerSig {
-        pub let sig: [UInt8]
+    access(all) struct SignerSig {
+        access(all) let sig: [UInt8]
         init(sig: [UInt8]) {
             self.sig = sig
         }
@@ -32,36 +32,29 @@ pub contract cBridge {
 
     // Admin is a special authorization resource that 
     // allows the owner to perform important functions to modify the contract state
-    pub resource BridgeAdmin {
-        pub fun resetSigners(signers: {String: UInt256}) {
-            // to avoid duplicated keys due to upper/lower cases
-            var cleanSigners: {String: UInt256} = {}
-            for k in signers.keys {
-                cleanSigners[k.toLower()] = signers[k]
-            }
-            cBridge.signers = cleanSigners
+    access(all) resource BridgeAdmin {
+        access(all) fun resetSigners(signers: {String: UInt256}) {
+            cBridge.signers = signers
             cBridge.totalPower = 0
-            for power in cleanSigners.values {
+            for power in signers.values {
                 cBridge.totalPower = cBridge.totalPower + power
             }
-            assert(cBridge.totalPower > 0, message: "total power must larger than 0!")
-            cBridge.signerUpdateBlock = getCurrentBlock().height
             emit SignersUpdated(
-              signers: cleanSigners
+              signers: signers
             )
         }
-        pub fun createBridgeAdmin(): @BridgeAdmin {
+        access(all) fun createBridgeAdmin(): @BridgeAdmin {
             return <-create BridgeAdmin()
         }
     }
 
     // getter for signers/power as self.signers is not accessible outside contract
-    pub fun getSigners(): {String: UInt256} {
+    access(all) fun getSigners(): {String: UInt256} {
         return self.signers
     }
 
     // return true if sigs have more than 2/3 total power
-    pub fun verify(data:[UInt8], sigs: [SignerSig]): Bool {
+    access(all) fun verify(data:[UInt8], sigs: [SignerSig]): Bool {
         var signedPower: UInt256 = 0
         var quorum: UInt256 = (self.totalPower*2)/3 + 1
         // go over all known signers, for each signer, try to find which sig matches
@@ -106,7 +99,7 @@ pub contract cBridge {
       self.signerUpdateBlock = 0
 
       self.AdminPath = /storage/cBridgeAdmin
-      self.account.save<@BridgeAdmin>(<- create BridgeAdmin(), to: self.AdminPath)
+      self.account.storage.save<@BridgeAdmin>(<- create BridgeAdmin(), to: self.AdminPath)
     }
 
     // below are struct and func needed to update cBridge.signers by cosigned msg
@@ -121,17 +114,17 @@ pub contract cBridge {
         bytes power = 2; // big.Int.Bytes
     }
     */
-    pub struct PbSignerPowerMap {
-        pub var blockheight: UInt64
-        pub let signerMap: {String: UInt256}
-        pub var totalPower: UInt256
+    access(all) struct PbSignerPowerMap {
+        access(all) var blockheight: UInt64
+        access(all) let signerMap: {String: UInt256}
+        access(all) var totalPower: UInt256
         // raw is serialized PbSignerPowerMap
         init(_ raw: [UInt8]) {
             self.blockheight = 0
             self.signerMap = {}
             self.totalPower = 0
             // now decode pbraw and assign
-            let buf = Pb.Buffer(raw)
+            let buf = Pb.Buffer(raw: raw)
             while buf.hasMore() {
               let tagType = buf.decKey()
               switch Int(tagType.tag) {
@@ -140,9 +133,9 @@ pub contract cBridge {
                   self.blockheight = buf.decVarint()
                 case 2:
                   assert(tagType.wt==Pb.WireType.LengthDelim, message: "wrong wire type")
-                  // now decode SignerPower msg, as length delim, we could just decBytes here
-                  // and have SignerPower struct init, but it's more code
-                  buf.decVarint() // SignerPower msg length, no use for now
+                  // now decode SignerPower msg
+                  // pegbridge.pb.go, as the proto code show, repeated field has a key outside
+                  let tag0 = buf.decKey()
                   let tag1 = buf.decKey()
                   assert(tag1.tag==1, message: "tag not 1: ".concat(tag1.tag.toString()))
                   assert(tag1.wt==Pb.WireType.LengthDelim, message: "wrong wire type")
