@@ -195,7 +195,11 @@ access(all) contract SafeBox {
     } else {
       let receiverRef = receiverCap.borrow() ?? panic("Could not borrow a reference to the receiver")
       // deposit into receiver
-      receiverRef.deposit(from: <- vault)
+      if (receiverRef.isSupportedVaultType(type: vault.getType())) {
+        receiverRef.deposit(from: <- vault)
+      } else {
+        panic("unsupported vault type")
+      }
     }
     // emit withdrawn even added to delay, to be consistent with solidity
     emit Withdrawn(
