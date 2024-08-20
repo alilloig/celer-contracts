@@ -1,6 +1,5 @@
 access(all) contract VolumeControl {
 
-  access(all) entitlement Update
 
   access(all) let AdminPath: StoragePath
   // ========== events ==========
