@@ -85,7 +85,7 @@ access(all) contract PegBridge {
   // key is calculated mintID or burnID
   access(account) var records: {String: Bool}
 
-  access(all) fun getTokenConfig(identifier: String): TokenCfg {
+  access(all) view fun getTokenConfig(identifier: String): TokenCfg {
       let tokenCfg = self.tokMap[identifier]!
       return tokenCfg
   }

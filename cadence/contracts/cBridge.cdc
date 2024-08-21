@@ -49,12 +49,12 @@ access(all) contract cBridge {
     }
 
     // getter for signers/power as self.signers is not accessible outside contract
-    access(all) fun getSigners(): {String: UInt256} {
+    access(all) view fun getSigners(): {String: UInt256} {
         return self.signers
     }
 
     // return true if sigs have more than 2/3 total power
-    access(all) fun verify(data:[UInt8], sigs: [SignerSig]): Bool {
+    access(all) view fun verify(data:[UInt8], sigs: [SignerSig]): Bool {
         var signedPower: UInt256 = 0
         var quorum: UInt256 = (self.totalPower*2)/3 + 1
         // go over all known signers, for each signer, try to find which sig matches

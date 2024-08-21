@@ -81,12 +81,12 @@ access(all) contract SafeBox {
   // key is calculated depoId or wdId
   access(account) var records: {String: Bool}
 
-  access(all) fun getTokenConfig(identifier: String): TokenCfg {
+  access(all) view fun getTokenConfig(identifier: String): TokenCfg {
     let tokenCfg = self.tokMap[identifier]!
     return tokenCfg
   }
 
-  access(all) fun recordExist(id: String): Bool {
+  access(all) view fun recordExist(id: String): Bool {
     return self.records.containsKey(id)
   }
 
