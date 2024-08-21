@@ -129,8 +129,8 @@ access(all) contract ceWBTC: FungibleToken, FTMinterBurner {
         access(contract) fun burnCallback() {
             if self.balance > 0.0 {
                 ceWBTC.totalSupply = ceWBTC.totalSupply - self.balance
+                self.balance = 0.0
             }
-            self.balance = 0.0
         }
     
         access(all) fun createEmptyVault(): @{FungibleToken.Vault} {

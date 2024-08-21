@@ -108,8 +108,8 @@ access(all) contract ceMATIC: FungibleToken, FTMinterBurner {
         access(contract) fun burnCallback() {
             if self.balance > 0.0 {
                 ceMATIC.totalSupply = ceMATIC.totalSupply - self.balance
+                self.balance = 0.0
             }
-            self.balance = 0.0
         }
     
         access(all) view fun getViews(): [Type] {

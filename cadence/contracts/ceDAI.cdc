@@ -108,8 +108,8 @@ access(all) contract ceDAI: FungibleToken, FTMinterBurner {
         access(contract) fun burnCallback() {
             if self.balance > 0.0 {
                 ceDAI.totalSupply = ceDAI.totalSupply - self.balance
+                self.balance = 0.0
             }
-            self.balance = 0.0
         }
     
         access(all) fun createEmptyVault(): @ceDAI.Vault {
