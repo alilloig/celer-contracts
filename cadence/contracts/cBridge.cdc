@@ -54,7 +54,7 @@ access(all) contract cBridge {
     }
 
     // return true if sigs have more than 2/3 total power
-    access(all) view fun verify(data:[UInt8], sigs: [SignerSig]): Bool {
+    access(all) fun verify(data:[UInt8], sigs: [SignerSig]): Bool {
         var signedPower: UInt256 = 0
         var quorum: UInt256 = (self.totalPower*2)/3 + 1
         // go over all known signers, for each signer, try to find which sig matches
