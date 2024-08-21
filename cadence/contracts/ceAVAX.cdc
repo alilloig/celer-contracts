@@ -102,7 +102,7 @@ access(all) contract ceAVAX: FungibleToken, FTMinterBurner {
         /// created Vault to the context that called so it can be deposited
         /// elsewhere.
         ///
-        access(FungibleToken.Withdraw) fun withdraw(amount: UFix64): @ceAVAX.Vault {
+        access(FungibleToken.Withdraw) fun withdraw(amount: UFix64): @{FungibleToken.Vault}  {
             self.balance = self.balance - amount
             emit TokensWithdrawn(amount: amount, from: self.owner?.address)
             return <-create Vault(balance: amount)
@@ -196,7 +196,7 @@ access(all) contract ceAVAX: FungibleToken, FTMinterBurner {
         /// Function that mints new tokens, adds them to the total supply,
         /// and returns them to the calling context.
         ///
-        access(all) fun mintTokens(amount: UFix64): @ceAVAX.Vault {
+        access(all) fun mintTokens(amount: UFix64): @{FungibleToken.Vault} {
             pre {
                 amount > 0.0: "Amount minted must be greater than zero"
                 amount <= self.allowedAmount: "Amount minted must be less than the allowed amount"

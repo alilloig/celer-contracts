@@ -175,7 +175,7 @@ access(all) contract ceDAI: FungibleToken, FTMinterBurner {
         /// Function that mints new tokens, adds them to the total supply,
         /// and returns them to the calling context.
         ///
-        access(all) fun mintTokens(amount: UFix64): @ceDAI.Vault {
+        access(all) fun mintTokens(amount: UFix64): @{FungibleToken.Vault} {
             pre {
                 amount > 0.0: "Amount minted must be greater than zero"
                 amount <= self.allowedAmount: "Amount minted must be less than the allowed amount"
