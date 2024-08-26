@@ -9,11 +9,6 @@ access(all) contract ceAVAX: FungibleToken, FTMinterBurner {
     /// Total supply of tokens in existence, initial 0, and increase when new tokens are minted
     access(all) var totalSupply: UFix64
 
-    /// Storage and Public Paths
-    access(all) let VaultStoragePath: StoragePath
-    access(all) let VaultPublicPath: PublicPath
-    access(all) let ReceiverPublicPath: PublicPath
-
     /// TokensInitialized
     ///
     /// The event that is emitted when the contract is created
@@ -57,9 +52,9 @@ access(all) contract ceAVAX: FungibleToken, FTMinterBurner {
         switch viewType {
             case Type<FungibleTokenMetadataViews.FTVaultData>():
                 return FungibleTokenMetadataViews.FTVaultData(
-                    storagePath: self.VaultStoragePath,
-                    receiverPath: self.ReceiverPublicPath,
-                    metadataPath: self.VaultPublicPath,
+                    storagePath: /storage/ceAVAXVault,
+                    receiverPath: /public/ceAVAXVault,
+                    metadataPath: /public/ceAVAXReceiver,
                     receiverLinkedType: Type<&ceAVAX.Vault>(),
                     metadataLinkedType: Type<&ceAVAX.Vault>(),
                     createEmptyVaultFunction: (fun(): @{FungibleToken.Vault} {
@@ -235,10 +230,6 @@ access(all) contract ceAVAX: FungibleToken, FTMinterBurner {
 
     init() {
         self.totalSupply = 0.0
-
-        self.VaultStoragePath = /storage/ceAVAXVault
-        self.VaultPublicPath = /public/ceAVAXVault
-        self.ReceiverPublicPath = /public/ceAVAXReceiver
 
         // account owner only has admin resource, no vault as tokens are only minted later
         let admin <- create Administrator()

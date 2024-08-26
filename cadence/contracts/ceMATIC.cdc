@@ -9,11 +9,6 @@ access(all) contract ceMATIC: FungibleToken, FTMinterBurner {
     /// Total supply of tokens in existence, initial 0, and increase when new tokens are minted
     access(all) var totalSupply: UFix64
 
-    /// Storage and Public Paths
-    access(all) let VaultStoragePath: StoragePath
-    access(all) let VaultPublicPath: PublicPath
-    access(all) let ReceiverPublicPath: PublicPath
-
     /// TokensInitialized
     ///
     /// The event that is emitted when the contract is created
@@ -215,10 +210,6 @@ access(all) contract ceMATIC: FungibleToken, FTMinterBurner {
     init() {
         self.totalSupply = 0.0
 
-        self.VaultStoragePath = /storage/ceMATICVault
-        self.VaultPublicPath = /public/ceMATICVault
-        self.ReceiverPublicPath = /public/ceMATICReceiver
-
         // account owner only has admin resource, no vault as tokens are only minted later
         let admin <- create Administrator()
         self.AdminPath = /storage/ceMATICAdmin
@@ -236,9 +227,9 @@ access(all) contract ceMATIC: FungibleToken, FTMinterBurner {
         switch viewType {
             case Type<FungibleTokenMetadataViews.FTVaultData>():
                 return FungibleTokenMetadataViews.FTVaultData(
-                    storagePath: self.VaultStoragePath,
-                    receiverPath: self.ReceiverPublicPath,
-                    metadataPath: self.VaultPublicPath,
+                    storagePath: /storage/ceMATICVault,
+                    receiverPath: /public/ceMATICVault,
+                    metadataPath: /public/ceMATICReceiver,
                     receiverLinkedType: Type<&ceMATIC.Vault>(),
                     metadataLinkedType: Type<&ceMATIC.Vault>(),
                     createEmptyVaultFunction: (fun(): @{FungibleToken.Vault} {
