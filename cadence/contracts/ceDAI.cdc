@@ -107,7 +107,7 @@ access(all) contract ceDAI: FungibleToken, FTMinterBurner {
             }
         }
     
-        access(all) fun createEmptyVault(): @ceDAI.Vault {
+        access(all) fun createEmptyVault(): @{FungibleToken.Vault} {
             return <-create Vault(balance: 0.0)
         }
 

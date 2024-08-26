@@ -131,7 +131,7 @@ access(all) contract ceBUSD: FungibleToken, FTMinterBurner {
     /// and store the returned Vault in their storage in order to allow their
     /// account to be able to receive deposits of this token type.
     ///
-    access(all) fun createEmptyVault(vaultType: Type): @ceBUSD.Vault {
+    access(all) fun createEmptyVault(vaultType: Type): @{FungibleToken.Vault} {
         return <-create Vault(balance: 0.0)
     }
 
