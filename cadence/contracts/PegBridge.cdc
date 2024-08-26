@@ -90,7 +90,7 @@ access(all) contract PegBridge {
       return tokenCfg
   }
 
-  access(all) fun recordExist(id: String): Bool {
+  access(all) view fun recordExist(id: String): Bool {
       return self.records.containsKey(id)
   }
 
