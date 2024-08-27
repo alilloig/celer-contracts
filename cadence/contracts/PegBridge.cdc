@@ -122,10 +122,10 @@ access(all) contract PegBridge {
 
   // token admin must create minter/burner resource and call add
   access(all) resource interface IAddMinter {
-    access(all) fun addMinter(minter: @{FTMinterBurner.IMinter})
+    access(all) fun addMinter(minter: @{FTMinterBurner.Minter})
   }
   access(all) resource interface IAddBurner {
-    access(all) fun addBurner(burner: @{FTMinterBurner.IBurner})
+    access(all) fun addBurner(burner: @{FTMinterBurner.Burner})
   }
 
   /// MinterBurnerMap support public add minter/burner by token admin,
@@ -133,11 +133,11 @@ access(all) contract PegBridge {
   /// when called by this contract
   access(all) resource MinterBurnerMap: IAddMinter, IAddBurner {
     // map from token vault identifier to minter or burner resource
-    access(account) var hasMinters: @{String: {FTMinterBurner.IMinter}}
-    access(account) var hasBurners: @{String: {FTMinterBurner.IBurner}}
+    access(account) var hasMinters: @{String: {FTMinterBurner.Minter}}
+    access(account) var hasBurners: @{String: {FTMinterBurner.Burner}}
 
     // called by token admin
-    access(all) fun addMinter(minter: @{FTMinterBurner.IMinter}) {
+    access(all) fun addMinter(minter: @{FTMinterBurner.Minter}) {
       let idStr = minter.getType().identifier
       let newIdStr = idStr.slice(from: 0, upTo: idStr.length - 6).concat("Vault")
       // only supported token minter can be added
@@ -146,7 +146,7 @@ access(all) contract PegBridge {
       let oldMinter <- self.hasMinters[newIdStr] <- minter
       destroy oldMinter
     }
-    access(all) fun addBurner(burner: @{FTMinterBurner.IBurner}) {
+    access(all) fun addBurner(burner: @{FTMinterBurner.Burner}) {
       let idStr = burner.getType().identifier
       let newIdStr = idStr.slice(from: 0, upTo: idStr.length - 6).concat("Vault")
       // only supported token burner can be added
@@ -167,11 +167,11 @@ access(all) contract PegBridge {
 
     // for extra security, only this contract can call mint/burn
     access(contract) fun mint(id:String, amt: UFix64): @{FungibleToken.Vault} {
-      let minter = (&self.hasMinters[id] as &{FTMinterBurner.IMinter}?)!
+      let minter = (&self.hasMinters[id] as &{FTMinterBurner.Minter}?)!
       return <- minter.mintTokens(amount: amt)
     }
     access(contract) fun burn(id:String, from: @{FungibleToken.Vault}) {
-      let burner = (&self.hasBurners[id] as &{FTMinterBurner.IBurner}?)!
+      let burner = (&self.hasBurners[id] as &{FTMinterBurner.Burner}?)!
       burner.burnTokens(from: <- from)
     }
     init(){

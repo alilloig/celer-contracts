@@ -141,7 +141,7 @@ access(all) contract ceMATIC: FungibleToken, FTMinterBurner {
         ///
         /// Function that creates and returns a new minter resource
         ///
-        access(all) fun createNewMinter(allowedAmount: UFix64): @{FTMinterBurner.IMinter} {
+        access(all) fun createNewMinter(allowedAmount: UFix64): @{FTMinterBurner.Minter} {
             emit MinterCreated(allowedAmount: allowedAmount)
             return <-create Minter(allowedAmount: allowedAmount)
         }
@@ -150,7 +150,7 @@ access(all) contract ceMATIC: FungibleToken, FTMinterBurner {
         ///
         /// Function that creates and returns a new burner resource
         ///
-        access(all) fun createNewBurner(): @{FTMinterBurner.IBurner} {
+        access(all) fun createNewBurner(): @{FTMinterBurner.Burner} {
             emit BurnerCreated()
             return <-create Burner()
         }
@@ -160,7 +160,7 @@ access(all) contract ceMATIC: FungibleToken, FTMinterBurner {
     ///
     /// Resource object that token admin accounts can hold to mint new tokens.
     ///
-    access(all) resource Minter: FTMinterBurner.IMinter {
+    access(all) resource Minter: FTMinterBurner.Minter {
 
         /// The amount of tokens that the minter is allowed to mint
         access(all) var allowedAmount: UFix64
@@ -190,7 +190,7 @@ access(all) contract ceMATIC: FungibleToken, FTMinterBurner {
     ///
     /// Resource object that token admin accounts can hold to burn tokens.
     ///
-    access(all) resource Burner: FTMinterBurner.IBurner {
+    access(all) resource Burner: FTMinterBurner.Burner {
 
         /// burnTokens
         ///
