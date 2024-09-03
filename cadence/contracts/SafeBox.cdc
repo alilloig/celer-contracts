@@ -81,12 +81,12 @@ access(all) contract SafeBox {
   // key is calculated depoId or wdId
   access(account) var records: {String: Bool}
 
-  access(all) fun getTokenConfig(identifier: String): TokenCfg {
+  access(all) view fun getTokenConfig(identifier: String): TokenCfg {
     let tokenCfg = self.tokMap[identifier]!
     return tokenCfg
   }
 
-  access(all) fun recordExist(id: String): Bool {
+  access(all) view fun recordExist(id: String): Bool {
     return self.records.containsKey(id)
   }
 
@@ -185,22 +185,23 @@ access(all) contract SafeBox {
     self.records[wdId] = true
     let receiverCap = getAccount(wdInfo.receiver).capabilities.get<&{FungibleToken.Receiver}>(tokCfg.vaultPub)
     let capability = self.account.capabilities.storage.issue<auth(FungibleToken.Withdraw)&{FungibleToken.Provider}>(tokCfg.vaultSto)
+    
     let vaultRef = capability.borrow() ?? panic("Could not borrow reference to the owner's Vault!")
     // vault that holds to deposit ft
     let vault <- vaultRef.withdraw(amount: wdInfo.amount)
 
+    // vault type validation
+    let receiverRef = receiverCap.borrow() ?? panic("Could not borrow a reference to the receiver")
+    assert(receiverRef.isSupportedVaultType(type: vault.getType()), message: "unsupported vault type")
+
     if wdInfo.amount > tokCfg.delayThreshold {
-      // add to delayed xfer
-      DelayedTransfer.addDelayXfer(id: wdId, receiverCap: receiverCap, from: <- vault)
+        // add to delayed xfer
+        DelayedTransfer.addDelayXfer(id: wdId, receiverCap: receiverCap, from: <- vault)
     } else {
-      let receiverRef = receiverCap.borrow() ?? panic("Could not borrow a reference to the receiver")
-      // deposit into receiver
-      if (receiverRef.isSupportedVaultType(type: vault.getType())) {
+        // deposit into receiver
         receiverRef.deposit(from: <- vault)
-      } else {
-        panic("unsupported vault type")
-      }
     }
+
     // emit withdrawn even added to delay, to be consistent with solidity
     emit Withdrawn(
       wdId: wdId,

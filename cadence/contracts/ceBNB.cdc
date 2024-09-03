@@ -9,11 +9,6 @@ access(all) contract ceBNB: FungibleToken, FTMinterBurner {
     /// Total supply of tokens in existence, initial 0, and increase when new tokens are minted
     access(all) var totalSupply: UFix64
 
-    /// Storage and Public Paths
-    access(all) let VaultStoragePath: StoragePath
-    access(all) let VaultPublicPath: PublicPath
-    access(all) let ReceiverPublicPath: PublicPath
-
     /// TokensInitialized
     ///
     /// The event that is emitted when the contract is created
@@ -58,9 +53,9 @@ access(all) contract ceBNB: FungibleToken, FTMinterBurner {
         switch viewType {
             case Type<FungibleTokenMetadataViews.FTVaultData>():
                 return FungibleTokenMetadataViews.FTVaultData(
-                    storagePath: self.VaultStoragePath,
-                    receiverPath: self.ReceiverPublicPath,
-                    metadataPath: self.VaultPublicPath,
+                    storagePath: /storage/ceBNBVault,
+                    receiverPath: /public/ceBNBVault,
+                    metadataPath: /public/ceBNBReceiver,
                     receiverLinkedType: Type<&ceBNB.Vault>(),
                     metadataLinkedType: Type<&ceBNB.Vault>(),
                     createEmptyVaultFunction: (fun(): @{FungibleToken.Vault} {
@@ -104,7 +99,7 @@ access(all) contract ceBNB: FungibleToken, FTMinterBurner {
         /// created Vault to the context that called so it can be deposited
         /// elsewhere.
         ///
-        access(FungibleToken.Withdraw) fun withdraw(amount: UFix64): @ceBNB.Vault {
+        access(FungibleToken.Withdraw) fun withdraw(amount: UFix64): @{FungibleToken.Vault} {
             self.balance = self.balance - amount
             emit TokensWithdrawn(amount: amount, from: self.owner?.address)
             return <-create Vault(balance: amount)
@@ -131,11 +126,11 @@ access(all) contract ceBNB: FungibleToken, FTMinterBurner {
         access(contract) fun burnCallback() {
             if self.balance > 0.0 {
                 ceBNB.totalSupply = ceBNB.totalSupply - self.balance
+                self.balance = 0.0
             }
-            self.balance = 0.0
         }
     
-        access(all) fun createEmptyVault(): @ceBNB.Vault {
+        access(all) fun createEmptyVault(): @{FungibleToken.Vault} {
             return <-create Vault(balance: 0.0)
         }
 
@@ -159,7 +154,7 @@ access(all) contract ceBNB: FungibleToken, FTMinterBurner {
     /// and store the returned Vault in their storage in order to allow their
     /// account to be able to receive deposits of this token type.
     ///
-    access(all) fun createEmptyVault(vaultType: Type): @ceBNB.Vault {
+    access(all) fun createEmptyVault(vaultType: Type): @{FungibleToken.Vault} {
         return <-create Vault(balance: 0.0)
     }
 
@@ -169,7 +164,7 @@ access(all) contract ceBNB: FungibleToken, FTMinterBurner {
         ///
         /// Function that creates and returns a new minter resource
         ///
-        access(all) fun createNewMinter(allowedAmount: UFix64): @Minter {
+        access(all) fun createNewMinter(allowedAmount: UFix64): @{FTMinterBurner.Minter} {
             emit MinterCreated(allowedAmount: allowedAmount)
             return <-create Minter(allowedAmount: allowedAmount)
         }
@@ -178,7 +173,7 @@ access(all) contract ceBNB: FungibleToken, FTMinterBurner {
         ///
         /// Function that creates and returns a new burner resource
         ///
-        access(all) fun createNewBurner(): @Burner {
+        access(all) fun createNewBurner(): @{FTMinterBurner.Burner} {
             emit BurnerCreated()
             return <-create Burner()
         }
@@ -188,7 +183,7 @@ access(all) contract ceBNB: FungibleToken, FTMinterBurner {
     ///
     /// Resource object that token admin accounts can hold to mint new tokens.
     ///
-    access(all) resource Minter: FTMinterBurner.IMinter {
+    access(all) resource Minter: FTMinterBurner.Minter {
 
         /// The amount of tokens that the minter is allowed to mint
         access(all) var allowedAmount: UFix64
@@ -198,7 +193,7 @@ access(all) contract ceBNB: FungibleToken, FTMinterBurner {
         /// Function that mints new tokens, adds them to the total supply,
         /// and returns them to the calling context.
         ///
-        access(all) fun mintTokens(amount: UFix64): @ceBNB.Vault {
+        access(all) fun mintTokens(amount: UFix64): @{FungibleToken.Vault} {
             pre {
                 amount > 0.0: "Amount minted must be greater than zero"
                 amount <= self.allowedAmount: "Amount minted must be less than the allowed amount"
@@ -218,7 +213,7 @@ access(all) contract ceBNB: FungibleToken, FTMinterBurner {
     ///
     /// Resource object that token admin accounts can hold to burn tokens.
     ///
-    access(all) resource Burner: FTMinterBurner.IBurner {
+    access(all) resource Burner: FTMinterBurner.Burner {
 
         /// burnTokens
         ///
@@ -237,10 +232,6 @@ access(all) contract ceBNB: FungibleToken, FTMinterBurner {
 
     init() {
         self.totalSupply = 0.0
-
-        self.VaultStoragePath = /storage/ceBNBVault
-        self.VaultPublicPath = /public/ceBNBVault
-        self.ReceiverPublicPath = /public/ceBNBReceiver
 
         // account owner only has admin resource, no vault as tokens are only minted later
         let admin <- create Administrator()

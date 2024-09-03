@@ -49,7 +49,7 @@ access(all) contract cBridge {
     }
 
     // getter for signers/power as self.signers is not accessible outside contract
-    access(all) fun getSigners(): {String: UInt256} {
+    access(all) view fun getSigners(): {String: UInt256} {
         return self.signers
     }
 

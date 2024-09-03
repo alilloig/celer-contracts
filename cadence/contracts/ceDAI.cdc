@@ -9,11 +9,6 @@ access(all) contract ceDAI: FungibleToken, FTMinterBurner {
     /// Total supply of tokens in existence, initial 0, and increase when new tokens are minted
     access(all) var totalSupply: UFix64
 
-    /// Storage and Public Paths
-    access(all) let VaultStoragePath: StoragePath
-    access(all) let VaultPublicPath: PublicPath
-    access(all) let ReceiverPublicPath: PublicPath
-
     /// TokensInitialized
     ///
     /// The event that is emitted when the contract is created
@@ -108,11 +103,11 @@ access(all) contract ceDAI: FungibleToken, FTMinterBurner {
         access(contract) fun burnCallback() {
             if self.balance > 0.0 {
                 ceDAI.totalSupply = ceDAI.totalSupply - self.balance
+                self.balance = 0.0
             }
-            self.balance = 0.0
         }
     
-        access(all) fun createEmptyVault(): @ceDAI.Vault {
+        access(all) fun createEmptyVault(): @{FungibleToken.Vault} {
             return <-create Vault(balance: 0.0)
         }
 
@@ -146,7 +141,7 @@ access(all) contract ceDAI: FungibleToken, FTMinterBurner {
         ///
         /// Function that creates and returns a new minter resource
         ///
-        access(all) fun createNewMinter(allowedAmount: UFix64): @{FTMinterBurner.IMinter} {
+        access(all) fun createNewMinter(allowedAmount: UFix64): @{FTMinterBurner.Minter} {
             emit MinterCreated(allowedAmount: allowedAmount)
             return <-create Minter(allowedAmount: allowedAmount)
         }
@@ -155,7 +150,7 @@ access(all) contract ceDAI: FungibleToken, FTMinterBurner {
         ///
         /// Function that creates and returns a new burner resource
         ///
-        access(all) fun createNewBurner(): @{FTMinterBurner.IBurner} {
+        access(all) fun createNewBurner(): @{FTMinterBurner.Burner} {
             emit BurnerCreated()
             return <-create Burner()
         }
@@ -165,7 +160,7 @@ access(all) contract ceDAI: FungibleToken, FTMinterBurner {
     ///
     /// Resource object that token admin accounts can hold to mint new tokens.
     ///
-    access(all) resource Minter: FTMinterBurner.IMinter {
+    access(all) resource Minter: FTMinterBurner.Minter {
 
         /// The amount of tokens that the minter is allowed to mint
         access(all) var allowedAmount: UFix64
@@ -175,7 +170,7 @@ access(all) contract ceDAI: FungibleToken, FTMinterBurner {
         /// Function that mints new tokens, adds them to the total supply,
         /// and returns them to the calling context.
         ///
-        access(all) fun mintTokens(amount: UFix64): @ceDAI.Vault {
+        access(all) fun mintTokens(amount: UFix64): @{FungibleToken.Vault} {
             pre {
                 amount > 0.0: "Amount minted must be greater than zero"
                 amount <= self.allowedAmount: "Amount minted must be less than the allowed amount"
@@ -195,7 +190,7 @@ access(all) contract ceDAI: FungibleToken, FTMinterBurner {
     ///
     /// Resource object that token admin accounts can hold to burn tokens.
     ///
-    access(all) resource Burner: FTMinterBurner.IBurner {
+    access(all) resource Burner: FTMinterBurner.Burner {
 
         /// burnTokens
         ///
@@ -215,10 +210,6 @@ access(all) contract ceDAI: FungibleToken, FTMinterBurner {
     init() {
         self.totalSupply = 0.0
 
-        self.VaultStoragePath = /storage/ceDAIVault
-        self.VaultPublicPath = /public/ceDAIVault
-        self.ReceiverPublicPath = /public/ceDAIReceiver
-
         // account owner only has admin resource, no vault as tokens are only minted later
         let admin <- create Administrator()
         self.AdminPath = /storage/ceDAIAdmin
@@ -236,9 +227,9 @@ access(all) contract ceDAI: FungibleToken, FTMinterBurner {
         switch viewType {
             case Type<FungibleTokenMetadataViews.FTVaultData>():
                 return FungibleTokenMetadataViews.FTVaultData(
-                    storagePath: self.VaultStoragePath,
-                    receiverPath: self.ReceiverPublicPath,
-                    metadataPath: self.VaultPublicPath,
+                    storagePath: /storage/ceDAIVault,
+                    receiverPath: /public/ceDAIVault,
+                    metadataPath: /public/ceDAIReceiver,
                     receiverLinkedType: Type<&ceDAI.Vault>(),
                     metadataLinkedType: Type<&ceDAI.Vault>(),
                     createEmptyVaultFunction: (fun(): @{FungibleToken.Vault} {

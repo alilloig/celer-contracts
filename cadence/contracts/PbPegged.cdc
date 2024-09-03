@@ -46,7 +46,7 @@ access(all) contract PbPegged {
       }
     }
     // compare tkStr.utf8 equals self.token
-    access(all) fun eqToken(tkStr:String): Bool {
+    access(all) view fun eqToken(tkStr:String): Bool {
       let tk = tkStr.utf8
       if tk.length == self.token.length {
         var i = 0;
@@ -108,7 +108,7 @@ access(all) contract PbPegged {
     }
 
     // compare tkStr.utf8 equals self.token
-    access(all) fun eqToken(tkStr:String): Bool {
+    access(all) view fun eqToken(tkStr:String): Bool {
       let tk = tkStr.utf8
       if tk.length == self.token.length {
         var i = 0;

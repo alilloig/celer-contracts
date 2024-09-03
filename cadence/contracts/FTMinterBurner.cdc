@@ -11,4 +11,9 @@ access(all) contract interface FTMinterBurner {
   access(all) resource interface IBurner {
     access(all) fun burnTokens(from: @{FungibleToken.Vault})
   }
+
+  access(all) resource interface Minter: IMinter {
+  }
+  access(all) resource interface Burner: IBurner {
+  }
 }

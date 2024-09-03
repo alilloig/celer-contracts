@@ -107,11 +107,11 @@ access(all) contract DelayedTransfer {
     )
   }
 
-  access(all) fun delayTransferExist(id: String): Bool {
+  access(all) view fun delayTransferExist(id: String): Bool {
     return self.infoMap.containsKey(id)
   }
 
-  access(all) fun getDelayBlockTs(id: String): UFix64 {
+  access(all) view fun getDelayBlockTs(id: String): UFix64 {
     let info = self.infoMap[id] ?? panic("token not support in contract")
     return info.blockTs
   }

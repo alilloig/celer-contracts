@@ -1,6 +1,5 @@
 access(all) contract VolumeControl {
 
-  access(all) entitlement Update
 
   access(all) let AdminPath: StoragePath
   // ========== events ==========
@@ -55,11 +54,11 @@ access(all) contract VolumeControl {
     self.lastOpTimestamps[token] = timestamp;
   }
 
-  access(all) fun getEpochVolume(token: String): UFix64 {
+  access(all) view fun getEpochVolume(token: String): UFix64 {
     return self.epochVolumes[token] ?? 0.0
   }
 
-  access(all) fun getLastOpTimestamp(token: String): UInt64 {
+  access(all) view fun getLastOpTimestamp(token: String): UInt64 {
     return self.lastOpTimestamps[token] ?? 0
   }
 }

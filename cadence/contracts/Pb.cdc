@@ -27,7 +27,7 @@ access(all) contract Pb {
       self.b = raw
     }
     // if idx >= b.length, means we're done
-    access(all) fun hasMore(): Bool {
+    access(all) view fun hasMore(): Bool {
       return self.idx < self.b.length
     }
 
@@ -108,7 +108,7 @@ access(all) contract Pb {
   }
 
   /// return hex string!
-  access(all) fun toString(_ raw: [UInt8]): String {
+  access(all) view fun toString(_ raw: [UInt8]): String {
     return String.encodeHex(raw)
   }
 }
