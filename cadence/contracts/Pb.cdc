@@ -71,7 +71,7 @@ access(all) contract Pb {
   }
 
   // raw is UInt64 big endian, raw.length <= 8
-  access(all) fun toUInt64(_ raw: [UInt8]): UInt64 {
+  access(all) view fun toUInt64(_ raw: [UInt8]): UInt64 {
     let rawLen = raw.length
     assert(rawLen<=8, message: "invalid raw length for UInt64")
     var ret: UInt64 = 0
@@ -85,7 +85,7 @@ access(all) contract Pb {
   }
 
   // raw is UInt256 big endian, raw.length <= 32
-  access(all) fun toUInt256(_ raw: [UInt8]): UInt256 {
+  access(all) view fun toUInt256(_ raw: [UInt8]): UInt256 {
     let rawLen = raw.length
     assert(rawLen<=32, message: "invalid raw length for UInt256")
     var ret: UInt256 = 0
@@ -98,11 +98,11 @@ access(all) contract Pb {
     return ret
   }
 
-  access(all) fun toAddress(_ raw: [UInt8]): Address {
+  access(all) view fun toAddress(_ raw: [UInt8]): Address {
     return Address(self.toUInt64(raw))
   }
 
-  access(all) fun toUFix64(_ raw: [UInt8]): UFix64 {
+  access(all) view fun toUFix64(_ raw: [UInt8]): UFix64 {
     let val = self.toUInt64(raw)
     return UFix64(val/100_000_000) + UFix64(val % 100_000_000)/100_000_000.0
   }
